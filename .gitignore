@@ -1,0 +1,50 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Windows / Linux
+Thumbs.db
+desktop.ini
+*~
+.directory
+
+# Ofimática (archivos temporales de Word / LibreOffice / Pages)
+~$*.doc*
+~$*.xls*
+~$*.ppt*
+.~lock.*#
+
+# LaTeX
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.synctex.gz
+*.toc
+*.nav
+*.snm
+*.vrb
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# NUNCA subir secretos reales al repo.
+# El examen es un diseño: si necesitas ejemplos de claves o tokens, usa valores
+# claramente falsos (p. ej. "EJEMPLO-NO-REAL") y nunca credenciales verdaderas.
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
