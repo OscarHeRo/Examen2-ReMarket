@@ -1,14 +1,14 @@
 # 8. Gestión de Claves Criptográficas
 
-La arquitectura de ReMarket prohíbe el almacenamiento de claves, contraseñas o certificados dentro del código fuente (*hardcoding*). Incrustar credenciales en el repositorio genera persistencia en el historial de Git, distribuye secretos de producción entre desarrolladores y clonaciones locales, e impide una revocación ágil ante incidentes de seguridad al exigir recompilación y despliegue de emergencia.
+**Por qué las claves no van en el código fuente:** el código se copia a cada laptop, al sistema de CI y al historial de Git, donde un secreto queda para siempre aunque luego se borre. Cualquiera con acceso de lectura al repositorio tendría la clave, y cambiarla exigiría recompilar y redesplegar en plena emergencia.
 
-Para desacoplar la seguridad del código, todas las claves criptográficas y secretos operativos se administran de forma centralizada en **AWS CloudHSM / KMS** (certificado **FIPS 140-2 Nivel 3**) y **AWS Secrets Manager**, inyectándose dinámicamente en la memoria RAM de los microservicios durante su ejecución.
+Por eso las claves viven en **AWS KMS** (KEKs y firma de eventos), **AWS CloudHSM** (llave privada de firma de comprobantes) y **AWS Secrets Manager** (contraseñas de servicios, token de Redis, *webhook secret* de Stripe). Los microservicios las obtienen en ejecución con su rol IAM; en el caso de KMS y CloudHSM, la clave nunca llega al pod: el pod pide la operación.
 
 ### Ciclo de Vida de las Claves
-1. **Generación:** Creación de claves maestras dentro de módulos HSM mediante generadores físicos de números aleatorios (TRNG).
-2. **Almacenamiento:** Las claves maestras (KEK) son **no exportables**; el hardware criptográfico impide extraerlas en texto claro bajo cualquier circunstancia.
-3. **Acceso y Autorización:** Restringido por políticas de menor privilegio de AWS IAM vinculadas a roles de servicio de Kubernetes (IRSA). Toda solicitud criptográfica se registra en AWS CloudTrail para auditoría forense.
-4. **Rotación Programada:** Rotación automática anual (365 días) en KMS para claves maestras de cifrado de sobre, y cada 90 días en Secrets Manager para credenciales operativas.
-5. **Revocación:** Capacidad de desactivación instantánea de claves comprometidas (*Key State: Disabled*), invalidando operaciones de descifrado en tiempo real sin reiniciar microservicios.
-6. **Respaldo y Resiliencia:** Réplicas sincronizadas y cifradas entre clústeres HSM distribuidos en múltiples Zonas de Disponibilidad.
-7. **Eliminación Segura:** Periodo forzoso de retención pendiente (7 a 30 días) antes de la destrucción física criptográfica irreversible (*Cryptographic Erasure*).
+1. **Generación:** Dentro del HSM con su generador de números aleatorios certificado.
+2. **Almacenamiento:** Las KEKs y llaves de firma son **no exportables**; sólo salen DEKs cifradas.
+3. **Acceso:** Políticas IAM de mínimo privilegio por servicio (IRSA). Cada uso queda en **CloudTrail**.
+4. **Rotación:** KMS rota la KEK cada año (las versiones viejas siguen descifrando datos antiguos); Secrets Manager rota secretos de servicios cada 90 días; Istio rota los certificados mTLS cada 24 h.
+5. **Revocación:** Una clave comprometida se deshabilita (*Key State: Disabled*) y deja de servir de inmediato; un secreto filtrado se rota y la versión anterior se invalida.
+6. **Respaldo:** KMS replica sus claves entre zonas internamente; el clúster CloudHSM tiene HSM en varias zonas con respaldos cifrados.
+7. **Eliminación:** KMS impone una espera de 7 a 30 días antes de borrar. Al borrarse la KEK, todo lo cifrado con ella queda irrecuperable (*borrado criptográfico*), útil para retirar datos de forma verificable.

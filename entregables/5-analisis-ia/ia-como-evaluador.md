@@ -2,7 +2,7 @@
 
 > **Responsable:** Equipo (Oscar, Ian, Violeta) · **Estado:** Listo
 
-Se presentó el diseño completo de la arquitectura cloud de **ReMarket** a un modelo de IA avanzado para someterlo a escrutinio crítico y evaluar objetivamente tres de sus observaciones principales.
+Se presentó un resumen de la arquitectura de **ReMarket** a una IA para que encontrara riesgos, errores de diseño o controles faltantes, y evaluamos críticamente sus tres observaciones. El prompt describe la **versión inicial** del diseño (por eso aún menciona SPIRE y "SQS/Kafka"); los cambios que salieron de esta revisión ya están aplicados en el documento técnico.
 
 ---
 
@@ -24,65 +24,71 @@ Evalúa el siguiente diseño de arquitectura de comercio electrónico (ReMarket)
 Identifica al menos tres observaciones técnicas: posibles vulnerabilidades no cubiertas, riesgos de implementación o mejoras de endurecimiento criptográfico.
 ```
 
-- **Herramienta y versión utilizada:** Claude 3.5 Sonnet / Gemini 1.5 Pro  
-- **Fecha de consulta:** 5 de noviembre de 2026  
+- **Herramienta:** Claude (Anthropic), usado a través de Claude Code
+- **Fecha de consulta:** 6 de noviembre de 2026
+- **Respuesta completa:** [`evidencia/01-revision-arquitectura.md`](evidencia/01-revision-arquitectura.md)
 
 ---
 
 ## Paso 2 — Evaluación Crítica de las Observaciones
 
-### Observación 1 — "Implementar autenticación mutua (mTLS) y autorización estricta en el broker de mensajería asíncrona, no solo en las APIs REST"
+### Observación 1 — Autenticidad de los eventos en el bus
 
-> *"Aunque el bus de eventos (Kafka/SQS) reside en subredes privadas, confiar únicamente en el cifrado en reposo SSE-KMS deja expuesto el canal en tránsito interno. Un atacante que comprometa un pod consumidor de menor criticidad (p. ej. Notificaciones) podría actuar como productor espurio e inyectar eventos falsos de órdenes pagadas o leer cargas sensibles en tránsito."*
+> *"Si un servicio con permiso de publicación es comprometido, puede inyectar un `PedidoPagado` falso y provocar un despacho sin cobro. Recomiendo: (a) separar temas o colas por tipo de evento y dar permiso de publicación sólo al servicio dueño de cada uno; (b) firmar los eventos críticos con una clave asimétrica de KMS y verificar la firma en el consumidor; (c) consumidores idempotentes y una cola de mensajes fallidos (DLQ)."*
 
 | Pregunta | Evaluación Crítica del Equipo |
 | :--- | :--- |
-| **1. ¿La recomendación es técnicamente correcta?** | **Inexacta.** Amazon SQS es un servicio gestionado multi-inquilino de AWS que opera fuera del service mesh de Istio; no soporta mTLS con identidades SPIRE. Opera bajo TLS y autenticación SigV4/IAM. |
-| **2. ¿Aplica realmente a nuestra arquitectura?** | **Parcialmente.** ReMarket utiliza eventos asíncronos para actualizar inventario y despachar notificaciones, pero sobre SQS/Kafka gestionado en la nube. |
-| **3. ¿Qué riesgo intenta reducir?** | Suplantación de productores, inyección de eventos falsos y escucha no autorizada en el bus de eventos (**R2 y R6**). |
-| **4. ¿La aceptamos, modificamos o rechazamos?** | **Modificada**. |
-| **5. ¿Qué evidencia técnica justifica la decisión?** | No se puede forzar mTLS en SQS nativo. La solución real en AWS consiste en restringir el acceso a un *VPC Endpoint* privado con la condición `aws:SourceVpce`, aplicar *Queue Policies* IAM estrictas (IRSA) por servicio y firmar digitalmente eventos críticos (`PedidoPagado`) con **ECDSA P-256 en AWS KMS**, permitiendo a los consumidores validar la firma con la clave pública sin que puedan emitir mensajes apócrifos. |
+| **1. ¿Es técnicamente correcta?** | **Sí.** SSE-KMS protege el dato guardado, no su origen, y una política que permite `Publish` no restringe el tipo de evento. |
+| **2. ¿Aplica a nuestra arquitectura?** | **Sí.** Pedidos y Pagos publican en el mismo bus, e Inventario actúa sobre `PedidoPagado`. |
+| **3. ¿Qué riesgo intenta reducir?** | Inyección de eventos falsos y despachos sin cobro (R6). |
+| **4. ¿La aceptamos, modificamos o rechazamos?** | **Modificada.** |
+| **5. ¿Qué evidencia técnica justifica la decisión?** | Adoptamos (b) y (c): `PedidoPagado` lo publica y firma sólo Pagos con una clave ECDSA P-256 de KMS que ningún otro rol puede usar, y los consumidores la verifican; consumidores idempotentes y DLQ. En lugar de (a), mantenemos un solo tema SNS: la firma ya impide que Pedidos falsifique un pago, y separar temas añade operación sin reducir más el riesgo. Descartamos Kafka y nos quedamos con SNS → SQS, así que la parte de mTLS en MSK no aplica. |
 
-**Dónde queda reflejada:** Sección 11 del documento técnico y en el diagrama de arquitectura (flujo entre Pedidos y Bus).
+**Dónde queda reflejada:** Sección 11, diagrama de arquitectura y riesgo R6.
 
 ---
 
-### Observación 2 — "Utilizar Cifrado Homomórfico para procesar datos de tarjetas de crédito en memoria sin descifrarlos jamás"
+### Observación 2 — La ventana de 300 s no basta contra la repetición de webhooks
 
-> *"Para evitar cualquier ventana de exposición en memoria RAM durante transacciones de pago, ReMarket debería implementar esquemas de cifrado totalmente homomórfico (FHE), permitiendo realizar operaciones aritméticas sobre los datos de tarjeta cifrados directamente en los microservicios."*
+> *"Dentro de esos 5 minutos el mismo evento firmado puede llegar varias veces (Stripe incluso reintenta de forma legítima). Registren el `event.id` ya procesado e ignoren los repetidos. Además, antes de despachar, consulten el `PaymentIntent` en la API de Stripe y comparen monto y moneda con el pedido."*
 
 | Pregunta | Evaluación Crítica del Equipo |
 | :--- | :--- |
-| **1. ¿La recomendación es técnicamente correcta?** | **Parcialmente teórica.** Las matemáticas del cifrado homomórfico existen, pero su viabilidad práctica en e-commerce de alto rendimiento es nula. |
-| **2. ¿Aplica realmente a nuestra arquitectura?** | **NO de forma directa.** ReMarket adopta el estándar PCI-DSS SAQ-A donde el PAN nunca llega al servidor. |
-| **3. ¿Qué riesgo intenta reducir?** | Exposición de números de tarjeta en la memoria RAM del microservicio de pagos (**R1**). |
-| **4. ¿La aceptamos, modificamos o rechazamos?** | **Modificada**. |
-| **5. ¿Qué evidencia técnica justifica la decisión?** | El cifrado homomórfico introduce una sobrecarga computacional de hasta cuatro órdenes de magnitud ($10^4$), destruyendo los SLAs de latencia en picos de demanda. La solución óptima es mantener la **tokenización en el cliente mediante Stripe Elements**: ReMarket jamás recibe el PAN, logrando el mismo objetivo de confidencialidad con latencia despreciable. |
+| **1. ¿Es técnicamente correcta?** | **Sí.** La marca de tiempo limita *cuándo* se acepta un mensaje, no *cuántas veces*. La documentación de Stripe indica que un mismo evento puede entregarse más de una vez. |
+| **2. ¿Aplica a nuestra arquitectura?** | **Sí.** Nuestro diseño sólo tenía firma + ventana. |
+| **3. ¿Qué riesgo intenta reducir?** | Procesar dos veces un pago o confirmar un pedido con el pago de otro (R6). |
+| **4. ¿La aceptamos, modificamos o rechazamos?** | **Aceptada.** |
+| **5. ¿Qué evidencia técnica justifica la decisión?** | Guardar el `event.id` cuesta una escritura en Redis o en la BD por webhook. Comparar monto y moneda cierra el caso en que un pago real, pero de otro pedido o por menos dinero, se usa para confirmar una orden. |
 
-**Dónde queda reflejada:** Sección 09 del documento técnico y Sección 16.
+**Dónde queda reflejada:** Sección 9 (cuatro verificaciones del webhook) y matriz de riesgos (R6).
 
 ---
 
-### Observación 3 — "Entregar claves simétricas AES al navegador del cliente para descifrar localmente los comprobantes de compra"
+### Observación 3 — Dónde guarda el navegador los JWT
 
-> *"Para reducir la carga en los servidores y aplicar cifrado de extremo a extremo (E2EE), el servidor debería emitir claves simétricas AES derivadas que se envíen al navegador web del cliente, permitiendo que el descifrado de compras se realice localmente con la Web Cryptography API."*
+> *"Si se guardan en `localStorage`, cualquier XSS puede leerlos y reutilizarlos desde otra máquina durante toda su vigencia. Recomiendo guardar la sesión en una cookie `HttpOnly; Secure; SameSite=Strict`, o bien mantener el token de acceso sólo en memoria con vida corta y el de refresco en una cookie `HttpOnly` con rotación en cada uso."*
 
 | Pregunta | Evaluación Crítica del Equipo |
 | :--- | :--- |
-| **1. ¿La recomendación es técnicamente correcta?** | **NO.** Es un grave error de diseño criptográfico. |
-| **2. ¿Aplica realmente a la arquitectura propuesta?** | **NO.** Viola el modelo de amenazas de aplicaciones web. |
-| **3. ¿Qué riesgo intenta reducir?** | Carga de procesamiento en el clúster de Kubernetes. |
-| **4. ¿La aceptamos, modificamos o rechazamos?** | **Rechazada Categóricamente**. |
-| **5. ¿Qué evidencia técnica justifica la decisión?** | El navegador web es un entorno de confianza cero fuera del control corporativo. Enviar claves simétricas al cliente expone las llaves a robo mediante ataques Cross-Site Scripting (XSS), extensiones de navegador maliciosas o inspección directa en DevTools. La confidencialidad entre el cliente y el servidor se garantiza de manera segura y estándar mediante **TLS 1.3** sin comprometer material criptográfico maestro. |
+| **1. ¿Es técnicamente correcta?** | **Sí.** JavaScript inyectado puede leer `localStorage`, pero no una cookie `HttpOnly`. |
+| **2. ¿Aplica a nuestra arquitectura?** | **Sí, y además mostró una inconsistencia nuestra:** la clasificación de información decía "cookie" y la API decía `Authorization: Bearer`. |
+| **3. ¿Qué riesgo intenta reducir?** | Robo de tokens de sesión mediante XSS (secuestro de sesión). |
+| **4. ¿La aceptamos, modificamos o rechazamos?** | **Modificada.** |
+| **5. ¿Qué evidencia técnica justifica la decisión?** | Elegimos la segunda opción: token de acceso de 15 min sólo en memoria, enviado como `Bearer`, y token de refresco en cookie `HttpOnly; Secure; SameSite=Strict` que rota en cada uso. Así la API sigue sin depender de cookies para cada petición (menos exposición a CSRF) y un XSS no puede llevarse una sesión duradera. La CSP estricta reduce además la probabilidad del XSS. |
 
-**Dónde queda reflejada:** Sección 16 y Sección 17 (argumento central sobre los peligros de alucinaciones y sugerencias erróneas de la IA).
+**Dónde queda reflejada:** Sección 2 (tokens de sesión) y sección 5 (`POST /pedido`).
 
 ---
 
 ## Paso 3 — Decisión Final del Equipo
 
-| Observación Evaluada | Decisión Final | Justificación y Cambio en el Proyecto |
+| Observación Evaluada | Decisión Final | Cambio en el Proyecto |
 | :---: | :---: | :--- |
-| **1. mTLS y firmas en bus de eventos** | **Modificada** | Se descartó mTLS por incompatibilidad con SQS administrado y se incorporó canal privado por VPC Endpoint, políticas IAM estrictas y firmas asimétricas ECDSA P-256 en KMS (Sección 11). |
-| **2. Cifrado homomórfico en pagos** | **Modificada** | Se descartó FHE por sobrecarga y se reforzó la tokenización cliente PCI-DSS SAQ-A en la sección 09. |
-| **3. Claves simétricas en frontend** | **Rechazada** | Se rechazó por violar Zero Trust; se demostró que TLS 1.3 resuelve la confidencialidad sin exponer llaves. |
+| **1. Autenticidad de eventos en el bus** | **Modificada** | Firma ECDSA de `PedidoPagado` sólo por Pagos, idempotencia y DLQ; un solo tema SNS; Kafka descartado (sección 11). |
+| **2. Repetición de webhooks** | **Aceptada** | Registro de `event.id` y comparación de monto y moneda con Stripe (sección 9). |
+| **3. Almacenamiento de JWT** | **Modificada** | Acceso en memoria + refresco en cookie `HttpOnly` con rotación (secciones 2 y 5). |
+
+**Lo que la respuesta no cubrió:** no señaló que el prompt mezclaba dos opciones distintas
+(la CA de Istio y SPIRE), y como el prompt no incluía el diagrama, tampoco pudo ver que el
+webhook entraba directo a un pod privado. Esos errores aparecieron al comparar el diagrama
+con el texto: una IA sólo evalúa lo que se le muestra.

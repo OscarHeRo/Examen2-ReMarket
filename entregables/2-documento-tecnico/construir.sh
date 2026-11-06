@@ -14,18 +14,21 @@ echo "→ Concatenando secciones..."
 for f in secciones/*.md; do
   echo "   · $f"
   cat "$f" >> "$SALIDA"
-  printf '\n\n---\n\n' >> "$SALIDA"
+  printf '\n\n' >> "$SALIDA"
 done
 
 PALABRAS=$(wc -w < "$SALIDA" | tr -d ' ')
-PAGS=$(( PALABRAS / 500 ))
-echo "→ $SALIDA generado: ${PALABRAS} palabras (≈ ${PAGS} páginas a 500 palabras/página)"
+echo "→ $SALIDA generado: ${PALABRAS} palabras. El número real de páginas se informa al generar el PDF."
 
-if [ "$PAGS" -gt 10 ]; then
-  echo "   ⚠️  OJO: el límite del examen es 8–10 páginas. Hay que recortar."
-else
-  echo "   ✓ Extensión dentro del presupuesto del examen (máx. 10 páginas)."
-fi
+# Cuenta las páginas del PDF generado y avisa si se pasa del límite del examen.
+paginas_pdf() {
+  local n
+  n=$(grep -c "/Type */Page[^s]" "$PDF_SALIDA" 2>/dev/null || true)
+  if command -v pdfinfo >/dev/null 2>&1; then
+    n=$(pdfinfo "$PDF_SALIDA" | awk '/^Pages:/ {print $2}')
+  fi
+  echo "   → El PDF tiene ${n} páginas (límite del enunciado: 8–10)."
+}
 
 # Detectar navegador headless para renderizado HTML->PDF de alta fidelidad
 CHROME_BIN=$(command -v chromium || command -v google-chrome || true)
@@ -33,11 +36,15 @@ CHROME_BIN=$(command -v chromium || command -v google-chrome || true)
 # 1. Si pandoc está disponible, generar HTML con estilos CSS ejecutivos y compilar PDF
 if command -v pandoc >/dev/null 2>&1; then
   echo "→ Compilando con Pandoc y estilos tipográficos..."
-  pandoc -s -c "$CSS_FILE" "$SALIDA" -o "$HTML_SALIDA" --metadata title="ReMarket - Documento Técnico de Arquitectura y Seguridad"
+  # pagetitle (no title) para no repetir el título encima de la portada; --mathml para las fórmulas.
+  # --columns alto: pandoc no fija anchos iguales por columna y el navegador ajusta cada tabla a su contenido.
+  pandoc -s --mathml --embed-resources --columns=10000 -c "$CSS_FILE" "$SALIDA" -o "$HTML_SALIDA" \
+    --metadata pagetitle="ReMarket - Documento Técnico de Arquitectura y Seguridad" --metadata lang=es
   
   if [ -n "$CHROME_BIN" ]; then
     echo "→ Generando PDF de alta fidelidad mediante Chromium ($CHROME_BIN)..."
-    "$CHROME_BIN" --headless --disable-gpu --run-all-compositor-stages-before-draw --print-to-pdf="$PDF_SALIDA" "$HTML_SALIDA" >/dev/null 2>&1
+    "$CHROME_BIN" --headless --no-sandbox --disable-gpu --no-pdf-header-footer --run-all-compositor-stages-before-draw --print-to-pdf="$PDF_SALIDA" "$HTML_SALIDA" >/dev/null 2>&1
+    paginas_pdf
     echo "   ✓ $PDF_SALIDA generado exitosamente."
     exit 0
   fi
@@ -61,7 +68,8 @@ with open("documento-tecnico.html", "w", encoding="utf-8") as f:
     f.write(f"<!DOCTYPE html><html lang='es'><head><meta charset='utf-8'><title>ReMarket - Documento Técnico</title><style>{css}</style></head><body>{html_body}</body></html>")
 PYEOF
 
-  "$CHROME_BIN" --headless --disable-gpu --run-all-compositor-stages-before-draw --print-to-pdf="$PDF_SALIDA" "$HTML_SALIDA" >/dev/null 2>&1
+  "$CHROME_BIN" --headless --no-sandbox --disable-gpu --no-pdf-header-footer --run-all-compositor-stages-before-draw --print-to-pdf="$PDF_SALIDA" "$HTML_SALIDA" >/dev/null 2>&1
+    paginas_pdf
   echo "   ✓ $PDF_SALIDA generado exitosamente."
   exit 0
 fi

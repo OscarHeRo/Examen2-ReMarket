@@ -104,10 +104,9 @@ pre {
     border: 1px solid #e2e8f0;
     padding: 8px 10px;
     border-radius: 5px;
-    overflow-x: auto;
+    white-space: pre-wrap;
     font-size: 8pt;
     line-height: 1.32;
-    page-break-inside: avoid;
 }
 
 pre code {
@@ -132,9 +131,10 @@ hr {
     margin: 0.6em 0;
 }
 
+/* El diagrama de arquitectura ocupa casi toda la hoja para que su texto se lea impreso. */
 img {
-    max-width: 90%;
-    max-height: 330px;
+    max-width: 100%;
+    max-height: 22cm;
     height: auto;
     display: block;
     margin: 0.6em auto;
@@ -145,4 +145,20 @@ img {
 
 p:has(img) {
     text-align: center;
+}
+
+figure {
+    margin: 0.6em 0;
+    page-break-inside: avoid;
+}
+
+figcaption {
+    text-align: center;
+    font-size: 8pt;
+    color: #718096;
+}
+
+/* Las tablas no se parten a media fila. */
+tr {
+    page-break-inside: avoid;
 }

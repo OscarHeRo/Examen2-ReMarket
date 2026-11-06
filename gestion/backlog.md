@@ -34,11 +34,11 @@ La profesora recomienda **aplicar un enfoque ágil** y usar la IA como *Product 
 | # | Tarea | Responsable | Estado |
 | --- | --- | --- | --- |
 | 2.1 | Sección 03 — protección web / TLS 1.3, HSTS, ECDHE | Oscar | ✅ |
-| 2.2 | Sección 04 — comunicación entre microservicios (mTLS SPIFFE/SPIRE) | Oscar | ✅ |
+| 2.2 | Sección 04 — comunicación entre microservicios (mTLS con identidades SPIFFE de Istio) | Oscar | ✅ |
 | 2.3 | Sección 05 — API REST `POST /pedido` (JWT ES256, Idempotency-Key) | Oscar | ✅ |
 | 2.4 | Sección 06 — datos almacenados (AES-256-GCM Envelope Encryption) | Violeta | ✅ |
 | 2.5 | Sección 07 — contraseñas (Argon2id con memoria 64MB, tiempo 3, hilos 4) | Violeta | ✅ |
-| 2.6 | Sección 08 — gestión de claves (AWS KMS FIPS 140-2 Nivel 3, rotación anual) | Violeta | ✅ |
+| 2.6 | Sección 08 — gestión de claves (AWS KMS, rotación anual) | Violeta | ✅ |
 | 2.7 | Sección 09 — pasarela de pagos y webhook (Stripe Elements, HMAC-SHA256) | Oscar | ✅ |
 | 2.8 | Sección 10 — firmas digitales (Ed25519 en facturas XML/PDF con SHA-256) | Oscar | ✅ |
 | 2.9 | Sección 11 — comunicación asíncrona (mTLS y cifrado KMS en Amazon SQS/SNS) | Oscar | ✅ |
@@ -70,7 +70,7 @@ La profesora recomienda **aplicar un enfoque ágil** y usar la IA como *Product 
 | 4.5 | Sección 17 — reflexión final (responsabilidad humana y limitaciones IA) | Todos | ✅ |
 | 4.6 | Sección 00 — portada y resumen ejecutivo | Ian | ✅ |
 | 4.7 | Diagrama validado en sintaxis Mermaid y embebido | Ian | ✅ |
-| 4.8 | `./construir.sh` y **calibración a 8–10 páginas** (5,320 palabras ≈ 10 págs) | Todos | ✅ |
+| 4.8 | `./construir.sh` y **calibración de extensión** (hoy 12 págs + anexo; el límite del enunciado es 8–10) | Todos | 🟨 |
 | 4.9 | Revisión final contra `docs/requisitos-del-examen.md` | Todos | ✅ |
 | 4.10 | Preparación para entrega en Classroom | Todos | ✅ |
 
@@ -81,7 +81,7 @@ La profesora recomienda **aplicar un enfoque ágil** y usar la IA como *Product 
 | Riesgo | Mitigación | Estado |
 | --- | --- | --- |
 | El diagrama se atrasa y bloquea a los otros dos | Sprint 1 cerrado antes de empezar nada más | Mitigado y completado |
-| El documento se pasa de 10 páginas | Presupuesto calibrado con `./construir.sh` (5,320 palabras) | Mitigado y dentro del límite |
+| El documento se pasa de 10 páginas | `./construir.sh` reporta las páginas reales del PDF | Aceptado por el equipo: 12 págs + anexo |
 | Las tres partes no se leen como un documento único | Terminología acordada en el sprint 1 + revisión cruzada | Mitigado y unificado |
 | La evidencia de IA se reconstruye al final y queda pobre | Guardado de prompts y respuestas completos en `evidencia/` | Mitigado y respaldado |
 | Queda una pregunta obligatoria sin responder | Checklist de 8 preguntas verificada al 100% | Mitigado y verificado |

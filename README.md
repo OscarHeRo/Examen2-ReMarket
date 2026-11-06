@@ -17,7 +17,7 @@ material del curso que sirve de apoyo, los cinco entregables y la gestión del e
 
 | Integrante | Rol principal | Usuario GitHub |
 | --- | --- | --- |
-| Oscar David Hernández Rodríguez | Criptografía en tránsito (Bloque B) | _pendiente_ |
+| Oscar David Hernández Rodríguez | Criptografía en tránsito (Bloque B) | OscarHeRo |
 | Ian Alejandro Arroyo Ramírez | Arquitectura y datos (Bloque A) | IanFoi |
 | Violeta | Datos en reposo, riesgos y pipeline (Bloque C) | _pendiente_ |
 
@@ -34,7 +34,7 @@ Master* durante la planificación. El backlog vive en [`gestion/backlog.md`](ges
 | # | Entregable | Carpeta | Estado |
 | --- | --- | --- | --- |
 | 1 | Diagrama de arquitectura cloud | [`entregables/1-diagrama-arquitectura/`](entregables/1-diagrama-arquitectura/) | ✅ Listo |
-| 2 | Documento técnico (máx. 8–10 páginas) | [`entregables/2-documento-tecnico/`](entregables/2-documento-tecnico/) | ✅ Listo (5,320 palabras ≈ 10 págs) |
+| 2 | Documento técnico (máx. 8–10 páginas) | [`entregables/2-documento-tecnico/`](entregables/2-documento-tecnico/) | 🟦 En revisión (12 págs + anexo con el diagrama) |
 | 3 | Matriz de riesgos | [`entregables/3-matriz-riesgos/`](entregables/3-matriz-riesgos/) | ✅ Listo |
 | 4 | Diseño del pipeline DevSecOps | [`entregables/4-pipeline-devsecops/`](entregables/4-pipeline-devsecops/) | ✅ Listo |
 | 5 | Análisis del uso de la IA | [`entregables/5-analisis-ia/`](entregables/5-analisis-ia/) | ✅ Listo |

@@ -1,23 +1,22 @@
 # 14. Evaluación y Gestión de Riesgos
 
-Priorizamos la inversión en seguridad evaluando los riesgos del sistema mediante una matriz cuantitativa:
+Nivel de riesgo = Impacto (1–3) × Probabilidad (1–3). Rangos: **6–9 Alto**, **3–4 Medio**, **1–2 Bajo**. La matriz completa, con riesgo residual, está en el Entregable 3.
 
-$$\text{Nivel de Riesgo} = \text{Impacto } (1 \text{ a } 3) \times \text{Probabilidad } (1 \text{ a } 3)$$
+| ID | Categoría | Activo | Amenaza | Vulnerabilidad | I | P | Nivel |
+| :---: | :--- | :--- | :--- | :--- | :---: | :---: | :---: |
+| **R1** | Credenciales | Claves de AWS y Stripe | Robo de secretos | Secretos en código o en el repositorio | 3 | 2 | **6 Alto** |
+| **R2** | Comunicaciones | Tráfico entre pods | Espionaje o suplantación este-oeste | Red interna sin autenticación mutua | 3 | 1 | **3 Medio** |
+| **R3** | Almacenamiento | Respaldos de BD | Robo o borrado de respaldos | Snapshots sin cifrar o en la misma cuenta | 3 | 2 | **6 Alto** |
+| **R4** | Disponibilidad | Tienda en línea | DDoS en temporada alta | Capacidad fija, sin filtrado en el borde | 3 | 3 | **9 Alto** |
+| **R5** | Cadena de suministro | Imágenes en producción | Dependencia o imagen maliciosa | Sin SCA ni verificación de firma | 3 | 2 | **6 Alto** |
+| **R6** | Pagos | Confirmación de cobros | Webhook falso de "pago aprobado" | Webhook sin verificación de firma | 3 | 2 | **6 Alto** |
+| **R7** | Terceros | Avisos por SMS | Caída del proveedor de SMS | Un solo proveedor | 1 | 2 | **2 Bajo** |
 
-Rangos: **6–9 (Alto)**, **3–4 (Medio)** y **1–2 (Bajo)**. A continuación se presentan los riesgos identificados para la plataforma de ReMarket:
+### Tratamiento de los Riesgos Prioritarios
 
-| ID | Categoría | Amenaza | $I$ | $P$ | Nivel | Tratamiento |
-| :---: | :--- | :--- | :---: | :---: | :---: | :--- |
-| **R1** | **Credenciales** | Fuga de API keys maestras en repositorios Git. | 3 | 2 | **6 (Alto)** | **Mitigar:** Gitleaks pre-commit, OIDC y Secrets Manager. |
-| **R2** | **Comunicaciones** | Espionaje MitM en tráfico este-oeste entre pods. | 3 | 2 | **6 (Alto)** | **Mitigar:** mTLS estricto con Istio y certificados SPIRE. |
-| **R3** | **Almacenamiento** | Fuga de respaldos de base de datos sin cifrar. | 3 | 2 | **6 (Alto)** | **Mitigar:** AES-256 en KMS e inmutabilidad S3 WORM. |
-| **R4** | **Disponibilidad** | Caída por ataque DDoS masivo en temporada alta. | 3 | 3 | **9 (Alto)** | **Mitigar:** CloudFront CDN, AWS Shield y WAF rate limiting. |
-| **R5** | **Cadena Suministro** | Dependencias de terceros con fallas críticas (CVE $\ge 7.0$). | 3 | 2 | **6 (Alto)** | **Mitigar:** Análisis SCA bloqueante en CI y firmas Cosign. |
-| **R6** | **Terceros / Pagos** | Envío de webhooks falsos para simular pagos aprobados. | 3 | 2 | **6 (Alto)** | **Mitigar:** HMAC-SHA256 y verificación out-of-band con Stripe. |
-
-### Tratamiento de Riesgos Prioritarios
-| Riesgo | Control Preventivo | Control Detectivo | Control Correctivo |
-| :--- | :--- | :--- | :--- |
-| **R1 (Credenciales)** | Gitleaks pre-commit y OIDC sin secretos en Git. | TruffleHog en CI y alarmas CloudTrail por llamadas inusuales. | Revocación y rotación en Secrets Manager. |
-| **R4 (DDoS)** | CloudFront CDN y reglas WAF (500 req/min). | Alarmas CloudWatch por latencia o errores 5xx. | AWS Shield automático y autoescalado Karpenter. |
-| **R6 (Webhooks Falsos)** | HMAC-SHA256 con comparación en tiempo constante. | Registro SIEM de firmas inválidas o $t > 300\text{ s}$. | Bloqueo en WAF y consulta out-of-band a Stripe. |
+| Riesgo | Tipo de tratamiento | Preventivo | Detectivo | Correctivo |
+| :--- | :--- | :--- | :--- | :--- |
+| **R1** | Mitigación | Gitleaks en pre-commit y CI, OIDC sin claves fijas | Secret scanning de GitHub y alarmas de CloudTrail | Revocar y rotar en Secrets Manager; revisar CloudTrail |
+| **R4** | Mitigación + transferencia | CloudFront, Shield Advanced y WAF (500 req/min por IP) | Alarmas de CloudWatch por latencia y errores 5xx | Autoescalado HPA/Karpenter y *runbook* de respuesta; el costo del escalado por DDoS lo cubre la protección de costos de Shield Advanced (transferencia) |
+| **R6** | Mitigación + transferencia | HMAC-SHA256 en tiempo constante, ventana de 300 s y `event.id` único | Alerta en SIEM por firmas inválidas | Bloqueo en WAF y conciliación con Stripe; el manejo de tarjetas se transfiere a Stripe (PCI SAQ-A) |
+| **R7** | Aceptación | — | Alarma de errores del proveedor | El correo sigue funcionando; un retraso de SMS no detiene ventas |

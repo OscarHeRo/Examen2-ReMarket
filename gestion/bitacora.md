@@ -117,3 +117,28 @@ Formato: una entrada por sesión, lo más corta posible.
 ---
 
 <!-- Las entradas nuevas van arriba de esta línea, la más reciente primero. -->
+
+---
+
+### 2026-11-06 — Sesión 5: Revisión de la propuesta y correcciones
+
+**Asistentes:** Oscar David Hernández Rodríguez
+**Duración:** 1 sesión
+
+**Qué se decidió:**
+- Usar **SNS → SQS** como bus de eventos (se descarta Kafka); `PedidoPagado` lo publica y firma Pagos.
+- API Gateway = **Istio Ingress Gateway** detrás del ALB; identidades SPIFFE emitidas por la CA de Istio (sin SPIRE).
+- Token de acceso en memoria (`Bearer`) + token de refresco en cookie `HttpOnly`.
+- **KMS** para cifrado de sobre y firma de eventos; **CloudHSM** sólo para la llave de firma de comprobantes.
+- Rehacer la evidencia de IA con una consulta real y documentada (Claude, de Anthropic) sobre el prompt de evaluación.
+- Aceptar 12 páginas + anexo con el diagrama.
+
+**Qué se avanzó:**
+- Revisión completa de la rama `propuesta-solucion`; correcciones técnicas en secciones 00–17, diagrama, matriz de riesgos y entregable 5.
+- `construir.sh` corregido (encabezado de Chrome, título duplicado, fórmulas, anchos de tabla) y diagrama reexportado en alta resolución.
+
+**Bloqueos:**
+- Falta el apellido y usuario de GitHub de Violeta.
+
+**Siguiente paso y quién lo toma:**
+- Ian y Violeta revisan las correcciones antes de fusionar a `main` (Todos).

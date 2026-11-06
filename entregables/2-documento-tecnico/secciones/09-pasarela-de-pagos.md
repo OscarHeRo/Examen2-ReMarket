@@ -1,17 +1,18 @@
 # 9. Pasarela de Pagos
 
-El procesamiento de cobros se delega a **Stripe Elements** bajo **PCI-DSS SAQ-A**, reduciendo el riesgo al mínimo:
+El procesamiento de cobros se delega a **Stripe** con **Stripe Elements**, lo que deja a ReMarket en el alcance mínimo de PCI-DSS (**SAQ-A**).
 
-### Flujo de Datos y Alcance PCI
-1. **Datos de la pasarela:** El cliente escribe su tarjeta (PAN), CVV y fecha de vencimiento dentro de un *iframe* seguro de Stripe. ReMarket **jamás ve ni guarda números de tarjeta en texto claro**.
-2. **Datos recibidos por ReMarket:** Stripe devuelve un `payment_token` temporal, que mandamos a nuestro servicio de pagos junto con el ID de orden y monto.
-3. **Protección del checkout:** Para evitar robo de datos en el navegador (*Magecart*), usamos CSP estricta (`script-src 'self' https://js.stripe.com; frame-src https://js.stripe.com`) y firmas SRI en los scripts.
+### Flujo Usuario → ReMarket → Pasarela
+1. **Lo que maneja directamente la pasarela:** El cliente escribe número de tarjeta (PAN), CVV y vencimiento dentro de un *iframe* servido por Stripe; esos datos van del navegador a Stripe sin pasar por nuestros servidores.
+2. **Lo que recibe ReMarket:** Un identificador opaco del método de pago (`pm_...`) y, tras el cobro, el ID del `PaymentIntent`, su estado y los últimos 4 dígitos y marca para mostrarlos al cliente.
+3. **Lo que nunca se almacena:** PAN completo, CVV (tampoco lo guarda Stripe tras autorizar), banda magnética ni PIN.
+4. **Comunicaciones a proteger:** navegador ↔ Stripe (TLS, lo controla Stripe); Pagos → API de Stripe (TLS + llave secreta restringida guardada en Secrets Manager); Stripe → nuestro webhook (TLS + firma HMAC).
+5. **Protección del checkout:** Contra robo de datos en el navegador (*Magecart*), CSP estricta (`script-src 'self' https://js.stripe.com; frame-src https://js.stripe.com; connect-src 'self' https://api.stripe.com`) y SRI en **nuestros** scripts. Stripe.js no admite SRI porque se actualiza; se carga siempre desde `js.stripe.com`.
 
 ### Verificación del Webhook `POST /payment-confirmed`
-Para evitar que un atacante mande avisos falsos de cobros aprobados y la tienda envíe paquetes sin haber cobrado, aplicamos triple validación:
+Para impedir que un atacante envíe un "pago aprobado" falso y la tienda despache sin cobrar, el servicio de Pagos aplica cuatro verificaciones antes de confirmar:
 
-1. **Firma HMAC-SHA256:** Stripe manda en `Stripe-Signature` la firma calculada con el secreto del webhook:
-   $$\text{Firma} = \text{HMAC-SHA256}(\text{secret}, t \parallel \text{payload})$$
-   El servicio recalcula el hash con el secreto en AWS Secrets Manager y usa **comparación en tiempo constante** (`crypto.timingSafeEqual`) para evitar ataques de canal lateral por análisis de tiempos.
-2. **Ventana Anti-Replay:** Se descartan peticiones cuya fecha $t$ varíe en más de 300 segundos con el reloj del servidor (NTP), evitando que alguien capture y reenvíe una notificación vieja.
-3. **Confirmación Out-of-Band:** Como doble chequeo antes de despachar, el servicio le pregunta directo a Stripe (`GET /v1/charges/{id}`) sobre TLS 1.3 para confirmar en sus sistemas que el cobro es real y está pagado.
+1. **Firma HMAC-SHA256:** Stripe envía en `Stripe-Signature` la marca de tiempo `t` y la firma $\text{HMAC-SHA256}(\text{secreto}, t \,\|\, \text{"."} \,\|\, \text{cuerpo})$. El servicio la recalcula con el secreto guardado en Secrets Manager y compara en **tiempo constante**. Sin el secreto, el atacante no puede producir una firma válida.
+2. **Ventana de tiempo:** Se rechaza si `t` difiere más de 300 s del reloj del servidor (NTP), así no se puede reenviar una notificación vieja capturada.
+3. **Idempotencia por evento:** El `event.id` procesado se guarda; un reenvío dentro de la ventana se ignora.
+4. **Confirmación con el proveedor:** Antes de despachar, Pagos consulta `GET /v1/payment_intents/{id}` y comprueba que el estado sea `succeeded` y que **monto y moneda coincidan con el pedido**. Sólo entonces publica `PedidoPagado`.

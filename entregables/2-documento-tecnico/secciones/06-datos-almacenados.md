@@ -1,12 +1,14 @@
 # 6. Protección de Datos Almacenados (Datos en Reposo)
 
-La protección del canal de comunicación (TLS 1.3) termina al alcanzar los balanceadores y servidores perimetrales. Si un atacante lograra vulnerar el servidor, ejecutar una inyección SQL o sustraer un respaldo de base de datos (*backup leak*), la seguridad en tránsito no previene que los datos sean leídos directamente del medio de almacenamiento. Por esta razón, ReMarket implementa cifrado en reposo multinivel con separación estricta entre los datos persistidos y las claves criptográficas de descifrado.
+**Por qué no basta HTTPS:** TLS protege el *canal* mientras los datos viajan; al llegar a su destino se descifran y se guardan. Si un atacante roba un disco, un *snapshot* o un respaldo, o entra a la base de datos con credenciales robadas, TLS ya no interviene. Por eso los datos se cifran también en reposo, con claves guardadas lejos de los datos.
 
 ### Cifrado de Sobre (*Envelope Encryption*)
-Para cifrar millones de registros sin saturar la red ni degradar la latencia hacia un hardware centralizado, implementamos *Envelope Encryption* mediante **AES-256-GCM** en coordinación con **AWS KMS / CloudHSM** (certificado **FIPS 140-2 Nivel 3**):
+Cifrar millones de registros llamando al HSM por cada uno sería lento, así que usamos *envelope encryption* con **AES-256-GCM** y **AWS KMS** (HSM validados FIPS 140 nivel 3):
 
-1. **Clave Maestra de Cifrado de Claves (KEK):** Reside permanentemente dentro del hardware criptográfico HSM; **nunca sale del módulo en texto claro**.
-2. **Claves de Cifrado de Datos (DEK):** KMS genera claves rápidas e independientes para cada microservicio. El pod utiliza la DEK en memoria RAM para cifrar y autenticar el registro con AES-256-GCM y descarta la clave en claro inmediatamente. En PostgreSQL solo se almacena el texto cifrado junto con la DEK protegida (*wrapped*) por la KEK.
-3. **Almacenamiento de Bloque y Respaldos Inmutables:** Los discos EBS y la base de datos PostgreSQL cuentan con cifrado de bloque nativo. Los respaldos se depositan en Amazon S3 protegidos con **S3 Object Lock** en modo cumplimiento (WORM), impidiendo su modificación o borrado malicioso ante ataques de *ransomware* o credenciales comprometidas.
+1. **Clave maestra (KEK):** Vive dentro de KMS y **nunca sale del HSM en claro**. Hay una por servicio y tipo de dato.
+2. **Claves de datos (DEK):** KMS genera una DEK; el servicio la usa en memoria para cifrar y autenticar el campo o archivo con AES-256-GCM y descarta la copia en claro. Junto al dato sólo se guarda la DEK cifrada por la KEK. Para leer, el servicio pide a KMS descifrar la DEK, lo que exige un rol IAM autorizado y queda en CloudTrail.
+3. **Cifrado de discos y almacenamiento:** Volúmenes EBS, RDS, DynamoDB, S3 y snapshots usan cifrado nativo con claves KMS propias (no las administradas por defecto), así que sin permiso de KMS un snapshot copiado es ilegible.
+4. **Cifrado de respaldos:** Los respaldos se cifran con una **clave KMS distinta** y se copian a una **cuenta de AWS separada** con S3 Object Lock en modo cumplimiento (WORM), para que ni credenciales robadas de producción ni un *ransomware* puedan borrarlos o leerlos.
+5. **Separación de claves, datos y secretos:** Las claves están en KMS, los datos en RDS/S3 y las contraseñas de servicios en Secrets Manager; cada uno con permisos IAM distintos. Robar un solo componente no basta.
 
-Esta separación física y lógica asegura que, aun si un atacante extrae una copia física de la base de datos o de los respaldos, la información resulte completamente ilegible al no contar con permisos de descifrado autenticados en KMS.
+**Límite honesto:** el cifrado en reposo no detiene una inyección SQL, porque la aplicación descifra al consultar. Contra eso aplican consultas parametrizadas, el usuario de BD de mínimo privilegio por servicio y el WAF.

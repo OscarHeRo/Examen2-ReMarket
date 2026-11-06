@@ -1,18 +1,14 @@
 # 10. Firmas Digitales e Integridad (Facturas y Comprobantes)
 
-Los comprobantes de compra y facturas electrónicas requieren garantizar autenticidad, integridad y no repudio ante clientes, empresas de paquetería y autoridades tributarias (SAT). A diferencia de los datos confidenciales que se cifran para ocultar su contenido, los recibos fiscales deben permanecer en texto claro y legible para permitir su consulta inmediata; la protección radica en asegurar criptográficamente que los importes o productos no puedan ser alterados y que ReMarket no pueda desconocer su emisión.
+Los comprobantes de compra deben garantizar **integridad** (nadie cambió montos ni productos), **autenticidad** (los emitió ReMarket) y **no repudio** (ReMarket no puede negar haberlos emitido).
 
-### Flujo Criptográfico: Emisión y Verificación Universal
-El proceso de generación y validación de comprobantes se estructura en cinco etapas criptográficas:
+**Firmar no es cifrar.** Cifrar oculta el contenido para que sólo quien tiene la clave lo lea (confidencialidad). Firmar deja el documento **legible para todos** y le agrega una prueba, hecha con la clave privada del emisor, que cualquiera verifica con la clave pública. Un comprobante firmado se puede leer libremente; lo que no se puede es alterarlo sin que la verificación falle.
 
-1. **Estructuración del Documento ($M$):** El microservicio de facturación genera el comprobante en formato estándar (XML conforme a lineamientos fiscales / PDF estructurado).
-2. **Generación del Resumen Criptográfico:** Se calcula el hash mediante **SHA-256**:
-   $$h = \text{SHA-256}(M)$$
-   Cualquier modificación posterior en importes, fechas o productos alterará de forma irreversible el resumen resultante.
-3. **Firma Asimétrica en Hardware Seguro:** La clave privada institucional de ReMarket, custodiada de forma no exportable en **AWS CloudHSM** (**FIPS 140-2 Nivel 3**), firma el resumen utilizando **ECDSA P-256**:
-   $$\sigma = \text{Sign}_{sk}(h)$$
-   La operación se ejecuta dentro del módulo criptográfico sin exponer la clave privada a la memoria del microservicio.
-4. **Empaquetado con Certificado X.509:** Se adjuntan la firma digital $\sigma$ y el certificado digital **X.509** público emitido por una Autoridad Certificadora reconocida.
-5. **Verificación Universal:** Cualquier entidad externa (consumidor, pasarela de pago o auditoría fiscal) puede validar de forma independiente la integridad y procedencia del comprobante aplicando la clave pública $pk$ contenida en el certificado:
-   $$\text{Verify}_{pk}(\text{SHA-256}(M), \sigma) \stackrel{?}{=} \text{true}$$
-   Si el documento sufre cualquier alteración, la verificación falla de inmediato, garantizando no repudio pleno sin depender de canales confidenciales adicionales.
+### Flujo: Documento → Hash → Firma → Verificación
+1. **Documento ($M$):** El servicio de Pedidos genera el comprobante (XML o PDF).
+2. **Hash:** $h = \text{SHA-256}(M)$. Cambiar un solo carácter produce un resumen completamente distinto.
+3. **Firma:** La llave privada de ReMarket, custodiada **no exportable en CloudHSM**, firma el resumen con **ECDSA P-256**: $\sigma = \text{Sign}_{sk}(h)$. Pedidos pide la operación; la llave nunca llega a su memoria.
+4. **Certificado:** Se adjuntan $\sigma$ y el certificado **X.509** de ReMarket, emitido por una CA, que liga la clave pública $pk$ con la identidad de la empresa.
+5. **Verificación:** Cualquiera (cliente, auditor, paquetería) recalcula $\text{SHA-256}(M)$ y comprueba $\text{Verify}_{pk}(h, \sigma)$. Si el documento cambió, el hash cambia y la firma no valida.
+
+**Facturas fiscales en México:** el CFDI 4.0 sigue el esquema del SAT: se sella con el Certificado de Sello Digital (CSD) del emisor (RSA con SHA-256) y luego lo timbra un PAC. El mismo flujo hash → firma → verificación aplica; sólo cambian el algoritmo y la CA (el SAT). La llave del CSD también se guarda en CloudHSM.

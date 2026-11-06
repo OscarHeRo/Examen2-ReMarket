@@ -1,26 +1,23 @@
 # 12. Pipeline DevSecOps y Cadena de Suministro
 
-ReMarket aplica *Shift-Left Security* integrando controles automáticos bloqueantes en cada etapa:
+ReMarket aplica *Shift-Left Security*. Flujo: Desarrollador → Git (PR) → Build y pruebas → SAST/SCA → Imagen → Staging → Aprobación → Producción. Cada control va en la etapa más temprana donde detecta el problema, y los críticos bloquean el avance.
 
-```
-[ Desarrollador ] ──> [ Git PR ] ──> [ Pruebas CI ] ──> [ Empaquetado ] ──> [ Aprobación ] ──> [ Despliegue ]
-   (Gitleaks)          (2 pares)      (SAST + SCA)        (Trivy + Cosign)     (Manual Prod)      (ArgoCD GitOps)
-```
 
 | Control | Etapa | Herramienta | ¿Bloquea? | Propósito Técnico |
 | :--- | :--- | :--- | :---: | :--- |
-| **Detección de Secretos** | Pre-commit | Gitleaks | **SÍ** | Impide comitear API keys o contraseñas al repositorio. |
-| **Revisión de Código** | Pull Request | GitHub Rules | **SÍ** | Exige aprobación de dos pares antes del merge a `main`. |
-| **Análisis SAST** | CI | SonarQube | **SÍ** | Detecta inyecciones SQL, XSS y fallas de código interno. |
-| **Análisis SCA** | CI | Snyk / Trivy | **SÍ** | Bloquea dependencias con vulnerabilidades (CVE $\ge 7.0$). |
-| **Escaneo Contenedores** | Build | Trivy Container | **SÍ** | Analiza la imagen base en busca de paquetes vulnerables. |
-| **Firma Criptográfica** | Build | Sigstore Cosign | **SÍ** | Firma la imagen OCI; Kubernetes rechaza imágenes sin firma. |
-| **Pruebas DAST** | Staging | OWASP ZAP | **NO** | Escaneo dinámico en ejecución; alerta sin frenar despliegues. |
-| **Aprobación Manual** | Staging | GitHub Envs | **SÍ** | Visto bueno formal de líderes técnicos antes de producción. |
-| **Despliegue GitOps** | Deploy | ArgoCD | **SÍ** | Aplica el estado declarado en Git; anula desvíos manuales. |
+| **Detección de secretos** | Pre-commit y CI | Gitleaks / TruffleHog | **SÍ** | El hook local se puede saltar; el escaneo en CI no. |
+| **Control de acceso** | Repositorio | Branch protection, CODEOWNERS, MFA | **SÍ** | Nadie hace push directo a `main` ni cambia el pipeline sin el equipo de seguridad. |
+| **Revisión de código** | Pull Request | Reglas de GitHub | **SÍ** | Dos aprobaciones antes del merge a `main`. |
+| **Pruebas automatizadas** | CI | Pruebas unitarias e integración | **SÍ** | Una prueba fallida detiene el build. |
+| **Análisis SAST** | CI | SonarQube / Semgrep | **SÍ** | Detecta inyección SQL, XSS y mal uso de criptografía. |
+| **Análisis SCA** | CI | Snyk / Trivy | **SÍ** | Bloquea dependencias con vulnerabilidades CVSS ≥ 7.0 con parche. |
+| **Escaneo de imagen** | Empaquetado | Trivy | **SÍ** | Revisa paquetes del sistema base antes de subir a ECR. |
+| **Firma de imagen** | Empaquetado | Sigstore Cosign | **SÍ** | Kyverno en EKS rechaza imágenes sin firma válida. |
+| **Pruebas DAST** | Staging | OWASP ZAP | **Sólo críticos** | Escaneo dinámico; alerta salvo hallazgos críticos confirmados. |
+| **Aprobación a producción** | Antes de producción | Entornos de GitHub + ArgoCD | **SÍ** | Visto bueno del líder técnico y de seguridad, con MFA. |
 
-### Manejo de Secretos vía OIDC
-El pipeline **no almacena claves fijas de AWS**. GitHub Actions usa federación **OpenID Connect (OIDC)** con AWS IAM para obtener credenciales efímeras (15 min) limitadas a publicar en Amazon ECR.
+### Manejo Seguro de Secretos
+El pipeline **no guarda claves fijas de AWS**: GitHub Actions usa federación **OIDC** con IAM para obtener credenciales de 15 minutos, limitadas a publicar en Amazon ECR. Los secretos de la aplicación nunca pasan por el pipeline: los pods los leen en ejecución desde Secrets Manager.
 
 ### Seguridad de la Cadena de Suministro
-SCA previene librerías envenenadas (*typosquatting*), la política Kyverno en Kubernetes rechaza imágenes sin firma Cosign válida y todo cambio productivo exige commits firmados y revisados por dos pares.
+SCA frena librerías vulnerables o falsificadas (*typosquatting*), Kyverno sólo admite imágenes firmadas por nuestro pipeline y todo cambio productivo exige commits firmados y revisados por dos personas.

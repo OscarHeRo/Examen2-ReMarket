@@ -50,6 +50,7 @@ eso se lleva casi la mitad. Si algo hay que recortar, no es de ahí.
 | 15 | Disponibilidad y continuidad | | ✅ |
 | 16 | Uso de IA | | ✅ |
 | 17 | Reflexión final | | ✅ |
+| 18 | Anexo A — Diagrama de arquitectura (se regenera con `../1-diagrama-arquitectura/exportar.sh`) | | ✅ |
 
 ⬜ Sin empezar · 🟨 En progreso · 🟦 En revisión · ✅ Listo
 
@@ -75,8 +76,9 @@ explícita. Es lo más fácil de perder y lo más fácil de comprobar:
 ./construir.sh
 ```
 
-Genera `documento-tecnico.md` concatenando las secciones en orden. Si tienes `pandoc`
-instalado, genera también el PDF.
+Genera `documento-tecnico.md` concatenando las secciones en orden. Si tienes `pandoc` y
+Chromium/Chrome, genera también el PDF (sin el encabezado automático de Chrome) e imprime
+cuántas páginas tiene.
 
 > El archivo construido **no se versiona** (está en `.gitignore` local): la fuente de verdad
 > son los archivos de `secciones/`.

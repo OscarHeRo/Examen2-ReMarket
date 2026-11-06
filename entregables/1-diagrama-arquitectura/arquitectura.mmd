@@ -2,19 +2,20 @@
 %% ReMarket — Arquitectura Cloud Segura (Criptografía y Seguridad 2027-1)
 %% Diseño de referencia en AWS y componentes Cloud-Native / Zero Trust
 %% ============================================================================
+%%{init: {"flowchart": {"defaultRenderer": "elk"}}}%%
 flowchart TB
 
     subgraph Z0["ZONA NO CONFIABLE — Internet Pública"]
-        U["Cliente Web / Móvil"]
+        U["Cliente (navegador web)"]
         OP["Personal Interno / Admin"]
     end
 
     subgraph Z1["ZONA PERIMETRAL (DMZ) — Filtrado e Ingress"]
-        CDN["Amazon CloudFront<br/>(CDN + TLS 1.3 Termination)"]
-        WAF["AWS WAF + AWS Shield<br/>(Anti-DDoS, Rate Limiting, OWASP Top 10)"]
+        CDN["Amazon CloudFront<br/>(CDN + terminación TLS 1.3 / 1.2 AEAD)"]
+        WAF["AWS WAF (L7) + AWS Shield (L3/L4)<br/>(OWASP Top 10, rate limiting, anti-DDoS)"]
         ALB["Application Load Balancer (ALB)<br/>(Terminación TLS / Balanceo L7)"]
         FE["Frontend Web (SPA estática en S3)"]
-        GW["API Gateway / Envoy Ingress<br/>(Autenticación de tokens, Rate-Limit)"]
+        GW["API Gateway: Istio Ingress Gateway (Envoy)<br/>(Validación JWT y OpenAPI, cuotas)"]
         VPN["AWS Client VPN + MFA<br/>(Acceso administrativo)"]
     end
 
@@ -25,21 +26,21 @@ flowchart TB
         INV["Microservicio Inventario<br/>(Control de stock transaccional)"]
         PAY["Microservicio Pagos<br/>(Integración tokenizada y webhooks)"]
         NOT["Microservicio Notificaciones<br/>(Consumidor de eventos)"]
-        BUS[["Bus de Eventos / Cola<br/>(Amazon SQS / Kafka con SSE-KMS)"]]
+        BUS[["Bus de eventos: Amazon SNS → SQS<br/>(fan-out, SSE-KMS, DLQ)"]]
         CACHE[("Amazon ElastiCache Redis<br/>(Caché de sesiones y catálogo encriptada)")]
     end
 
     subgraph Z3["ZONA DE DATOS — Subredes Aisladas sin Salida a Internet"]
         DBU[("Amazon RDS PostgreSQL<br/>(BD Usuarios — AES-256-GCM)")]
-        DBT[("Amazon RDS PostgreSQL Multi-AZ<br/>(BD Transaccional — Pedidos y Stock)")]
+        DBT[("Amazon RDS PostgreSQL Multi-AZ<br/>(BD Transaccional — esquemas y usuarios<br/>separados: pedidos, pagos, inventario)")]
         DBC[("Amazon DynamoDB / S3<br/>(Catálogo y multimedia)")]
         LOG[("Amazon S3 Object Lock (WORM)<br/>(Logs inmutables de auditoría)")]
     end
 
     subgraph Z4["SERVICIOS DE SEGURIDAD Y GOBERNANZA"]
-        KMS["AWS KMS / CloudHSM (FIPS 140-2 L3)<br/>(Custodia de KEKs y firmas)"]
+        KMS["AWS KMS (KEKs, firma de eventos)<br/>+ CloudHSM (firma de comprobantes)"]
         SEC["AWS Secrets Manager<br/>(Credenciales y rotación de secrets)"]
-        IAM["AWS IAM + IRSA / SPIFFE-SPIRE<br/>(Identidades x509 efímeras y RBAC)"]
+        IAM["AWS IAM + IRSA / CA de Istio (istiod)<br/>(Roles mínimos e identidades SPIFFE X.509 de 24 h)"]
         SIEM["Amazon OpenSearch / SIEM<br/>(Detección de anomalías en tiempo real)"]
     end
 
@@ -51,10 +52,10 @@ flowchart TB
 
     %% --- Flujo de Entrada de Usuarios ---
     U -->|"HTTPS (TLS 1.3, ECDHE-X25519, HSTS)"| CDN
-    CDN -->|"Inspección de tráfico L7"| WAF
-    WAF --> ALB
-    ALB -->|"Carga estática"| FE
-    ALB -->|"HTTPS + JWT Bearer"| GW
+    WAF -.->|"Reglas asociadas a la distribución"| CDN
+    CDN -->|"Origen S3 privado (OAC)"| FE
+    CDN -->|"HTTPS re-cifrado + JWT Bearer"| ALB
+    ALB -->|"TLS"| GW
     OP -->|"Túnel TLS / WireGuard + MFA"| VPN
     VPN -->|"Acceso mTLS restringido"| GW
 
@@ -71,8 +72,9 @@ flowchart TB
     CAT -->|"TLS + Auth Redis"| CACHE
 
     %% --- Mensajería Asíncrona Confiable ---
-    PED -.->|"Evento firmado (ECDSA P-256 en KMS) vía TLS"| BUS
-    BUS -.->|"Lectura autenticada (IAM IRSA / TLS 1.3)"| NOT
+    PED -.->|"PedidoCreado (SigV4 + TLS)"| BUS
+    PAY -.->|"PedidoPagado firmado ECDSA P-256 (KMS)"| BUS
+    BUS -.->|"Lectura autenticada (IAM IRSA / TLS)"| NOT
     BUS -.->|"Consumo y actualización stock"| INV
 
     %% --- Acceso a Capa de Datos (Mínimo Privilegio) ---
@@ -81,14 +83,15 @@ flowchart TB
     PAY -->|"TLS 1.3 + IAM (IRSA) / KMS"| DBT
     INV -->|"TLS 1.3 + IAM (IRSA) / KMS"| DBT
     CAT -->|"HTTPS con SigV4"| DBC
-    AUTH -.->|"Syslog TLS"| LOG
-    PED -.->|"Syslog TLS"| LOG
-    PAY -.->|"Syslog TLS"| LOG
+    AUTH -.->|"Logs (TLS)"| LOG
+    PED -.->|"Logs (TLS)"| LOG
+    PAY -.->|"Logs (TLS)"| LOG
 
     %% --- Integración de Gobernanza y Criptografía ---
     KMS -.->|"Envelope Encryption (DEK/KEK)"| DBU
     KMS -.->|"Envelope Encryption (DEK/KEK)"| DBT
-    KMS -.->|"Claves para firmas de facturas"| PED
+    KMS -.->|"Firma de comprobantes (la llave no sale del HSM)"| PED
+    KMS -.->|"Firma de eventos críticos"| PAY
     SEC -.->|"Inyección en runtime (External Secrets)"| AUTH
     SEC -.->|"Shared secret webhook"| PAY
     IAM -.->|"Tokens temporales STS / IRSA"| GW
@@ -96,7 +99,8 @@ flowchart TB
 
     %% --- Salidas y Entradas con Terceros ---
     U -.->|"Tokenización directa (Frontend SDK)<br/>ReMarket NUNCA toca PAN/CVV"| PSP
-    PAY <-->|"HTTPS (TLS 1.3) + Webhook firmado HMAC-SHA256"| PSP
+    PAY -->|"HTTPS (TLS) + API key restringida"| PSP
+    PSP -->|"Webhook firmado HMAC-SHA256<br/>(entra por el borde, no directo al pod)"| CDN
     PED -->|"HTTPS (TLS 1.3) + API Key rotada"| SHIP
     NOT -->|"HTTPS (TLS 1.3) + Autenticación IAM"| MSG
 
@@ -114,3 +118,11 @@ flowchart TB
     class DBU,DBT,DBC,LOG datos
     class KMS,SEC,IAM,SIEM segur
     class PSP,SHIP,MSG terc
+
+    %% --- Color de cada zona de confianza (fondo del recuadro) ---
+    style Z0 fill:#fdecea,stroke:#c62828,stroke-width:2px
+    style Z1 fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    style Z2 fill:#e3f2fd,stroke:#0277bd,stroke-width:2px
+    style Z3 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    style Z4 fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+    style Z5 fill:#eceff1,stroke:#455a64,stroke-width:2px,stroke-dasharray:5 4
