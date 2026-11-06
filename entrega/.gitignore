@@ -1,0 +1,2 @@
+# El ZIP se regenera con ./armar-entrega.sh (los archivos sueltos sí se versionan)
+*.zip
