@@ -1,47 +1,17 @@
-# 13. Seguridad de contenedores y microservicios
+# 13. Seguridad de Contenedores y Microservicios
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar · **Extensión objetivo:** ~0.75 página
+El despliegue en Kubernetes exige controles de menor privilegio a nivel de sistema de archivos, clúster y red interna para prevenir escaladas al host y movimientos laterales:
 
-## Qué pide el examen
+### Endurecimiento de Contenedores (*Hardening*)
+1. **Imágenes Base Mínimas (Distroless):** Se eliminan administradores de paquetes (`apt`, `apk`), herramientas de red (`curl`, `nc`, `wget`) e intérpretes de comandos (`sh`, `bash`). Esto reduce la superficie de ataque y bloquea las herramientas utilizadas habitualmente tras un compromiso inicial.
+2. **Ejecución sin Privilegios (*Rootless*):** Configurada mediante el `securityContext` del pod: `runAsNonRoot: true`, `allowPrivilegeEscalation: false`, sistema de archivos en solo lectura (`readOnlyRootFilesystem: true` con almacenamiento efímero en `emptyDir` RAM) y remoción total de capacidades del kernel (`capabilities: drop: ["ALL"]`).
+3. **Políticas de Red por Defecto Restrictivas:** *NetworkPolicies* de Kubernetes en modo *default-deny* que descartan todo tráfico intra-clúster que no haya sido declarado explícitamente entre pares de pods.
 
-Proponer controles para **reducir el impacto de la vulneración de un microservicio**
-(asumir que uno *va* a caer: el diseño debe contener el daño).
+### Contención de Brechas y Prevención de Movimiento Lateral
+Para verificar la efectividad de la contención en capas, consideramos el microservicio de **Catálogo**, que por atender millones de consultas públicas presenta la mayor exposición perimetral. Ante un escenario hipotético de ejecución remota de código (RCE) en dicho pod, **tres barreras independientes impiden el acceso a las bases de datos de usuarios o pagos**:
 
-Considerar:
+1. **Aislamiento de Red L3/L4:** Las *NetworkPolicies* y *Security Groups* prohíben que los pods de catálogo emitan paquetes hacia las subredes de datos; los intentos de conexión hacia el puerto 5432 de PostgreSQL se descartan en la interfaz virtual.
+2. **Autenticación Mutua y Autorización Istio (L4/L7):** Todo intento de invocar APIs internas (como el servicio de Usuarios) requiere mTLS. El sidecar Envoy receptor comprueba la identidad SPIFFE del emisor (`spiffe://remarket.internal/ns/prod/sa/catalogo`) y la rechaza (HTTP 403 Forbidden) mediante su *AuthorizationPolicy*.
+3. **Segregación de Permisos IAM en la Nube:** La cuenta de servicio del catálogo (IRSA) carece de permisos IAM para solicitar secretos en Secrets Manager o utilizar claves KMS asociadas a usuarios o pagos.
 
-- mínimo privilegio
-- segmentación
-- aislamiento
-- actualización de imágenes
-- cuentas de servicio
-- secretos
-- permisos de red
-
-### Pregunta obligatoria
-
-> Si el microservicio de **catálogo** es comprometido:
-> **¿por qué no debería poder consultar directamente la base de datos de usuarios o pagos?**
-
-Esta respuesta debe ser coherente con las zonas de confianza del diagrama. Si el diagrama
-permite esa conexión, o el diagrama está mal o la respuesta lo está.
-
-## Las cuatro preguntas del criterio de evaluación
-
-Rellenar **antes** de redactar. Si no se pueden contestar las cuatro, la sección no está lista.
-
-| | |
-| --- | --- |
-| **¿Qué se protege?** | |
-| **¿Contra qué amenaza se protege?** | |
-| **¿Qué propiedad criptográfica o control se necesita?** | |
-| **¿Por qué la solución propuesta es adecuada?** | |
-
-## Desarrollo
-
-_Redactar aquí._
-
-## Decisiones tomadas y alternativas descartadas
-
-| Decisión | Alternativa descartada | Por qué |
-| --- | --- | --- |
-| | | |
+Este diseño asegura que un compromiso en la capa perimetral quede confinado estrictamente en su entorno de ejecución, protegiendo los activos críticos del sistema.

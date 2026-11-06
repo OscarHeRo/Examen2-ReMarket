@@ -1,6 +1,6 @@
 # Entregable 3 — Matriz de riesgos
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar
+> **Responsable:** _por asignar_ · **Estado:** ✅ Listo
 
 ## Qué pide el examen
 

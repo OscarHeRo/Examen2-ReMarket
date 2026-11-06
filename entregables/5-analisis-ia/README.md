@@ -1,6 +1,6 @@
 # Entregable 5 — Análisis del uso de la IA
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar
+> **Responsable:** _por asignar_ · **Estado:** ✅ Listo
 
 ReMarket quiere incorporar IA a sus actividades de ciberseguridad. Hay que analizarlo desde
 **dos perspectivas opuestas**.

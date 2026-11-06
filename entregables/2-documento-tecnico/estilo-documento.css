@@ -1,0 +1,148 @@
+@page {
+    size: letter;
+    margin: 1.65cm 1.65cm 1.65cm 1.65cm;
+    @bottom-right {
+        content: counter(page);
+        font-size: 8pt;
+        color: #718096;
+        font-family: sans-serif;
+    }
+    @bottom-left {
+        content: "ReMarket · Criptografía y Seguridad 2027-1 (Facultad de Ciencias, UNAM)";
+        font-size: 8pt;
+        color: #718096;
+        font-family: sans-serif;
+    }
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 9.3pt;
+    line-height: 1.35;
+    color: #2d3748;
+    max-width: 100%;
+    margin: 0;
+}
+
+h1, h2, h3, h4 {
+    color: #1a365d;
+    font-weight: 700;
+    margin-top: 1.1em;
+    margin-bottom: 0.3em;
+    page-break-after: avoid;
+}
+
+h1 {
+    font-size: 14pt;
+    border-bottom: 2px solid #2b6cb0;
+    padding-bottom: 0.2em;
+    margin-top: 1.3em;
+}
+
+h2 {
+    font-size: 12pt;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 0.15em;
+}
+
+h3 {
+    font-size: 10.5pt;
+    color: #2b6cb0;
+}
+
+p {
+    margin-top: 0.35em;
+    margin-bottom: 0.45em;
+    text-align: justify;
+}
+
+ul, ol {
+    margin-top: 0.25em;
+    margin-bottom: 0.45em;
+    padding-left: 1.5em;
+}
+
+li {
+    margin-bottom: 0.2em;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.6em 0;
+    font-size: 8pt;
+}
+
+table, th, td {
+    border: 1px solid #cbd5e0;
+}
+
+th {
+    background-color: #edf2f7;
+    color: #1a202c;
+    padding: 5px 7px;
+    font-weight: 600;
+    text-align: left;
+}
+
+td {
+    padding: 4px 7px;
+    vertical-align: top;
+}
+
+code {
+    background-color: #edf2f7;
+    color: #c53030;
+    padding: 0.12em 0.3em;
+    border-radius: 3px;
+    font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 85%;
+}
+
+pre {
+    background-color: #f7fafc;
+    border: 1px solid #e2e8f0;
+    padding: 8px 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-size: 8pt;
+    line-height: 1.32;
+    page-break-inside: avoid;
+}
+
+pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+}
+
+blockquote {
+    border-left: 4px solid #3182ce;
+    background-color: #ebf8ff;
+    color: #2c5282;
+    padding: 0.4em 0.8em;
+    margin: 0.6em 0;
+    font-size: 9pt;
+    page-break-inside: avoid;
+}
+
+hr {
+    border: 0;
+    border-top: 1px solid #edf2f7;
+    margin: 0.6em 0;
+}
+
+img {
+    max-width: 90%;
+    max-height: 330px;
+    height: auto;
+    display: block;
+    margin: 0.6em auto;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    page-break-inside: avoid;
+}
+
+p:has(img) {
+    text-align: center;
+}

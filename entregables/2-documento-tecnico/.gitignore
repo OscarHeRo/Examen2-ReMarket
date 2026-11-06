@@ -1,3 +1,5 @@
 # El documento construido se regenera con ./construir.sh — la fuente son secciones/
 documento-tecnico.md
 documento-tecnico.pdf
+documento-tecnico.html
+pandoc-build.log

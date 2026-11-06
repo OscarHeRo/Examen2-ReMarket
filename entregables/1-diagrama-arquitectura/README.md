@@ -1,78 +1,42 @@
-# Entregable 1 — Diagrama de arquitectura cloud
+# Entregable 1 — Diagrama de Arquitectura Cloud Segura
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar
+> **Estado:** Listo
 
-## Qué se entrega
+## Descripción General
 
-Un diagrama donde se identifiquen **claramente**:
+El diagrama de arquitectura de **ReMarket** representa una infraestructura cloud moderna, resiliente y distribuida bajo el paradigma **Zero Trust** y principios de **Security by Design**.
 
-- [ ] Usuarios
-- [ ] Servicios
-- [ ] Microservicios
-- [ ] Bases de datos
-- [ ] Comunicaciones
-- [ ] Servicios externos
-- [ ] **Zonas de confianza**
-- [ ] **Componentes de seguridad**
+La arquitectura está particionada en **6 Zonas de Confianza** claramente delimitadas por controles perimetrales, criptográficos y de red:
 
-## Componentes mínimos obligatorios
+1. **Z0 — Zona No Confiable (Internet Pública):** Clientes finales (web/móvil) y personal de operaciones conectándose desde redes no controladas.
+2. **Z1 — Zona Perimetral (DMZ):** Servicios de borde que absorben tráfico masivo y filtran ataques antes de tocar la red privada:
+   - **Amazon CloudFront (CDN):** Terminación TLS perimetral y almacenamiento en caché estático.
+   - **AWS WAF + AWS Shield:** Mitigación de ataques DDoS volumétricos (L3/L4) y reglas L7 contra inyecciones SQL, XSS, rate-limiting contra bots y credential stuffing.
+   - **Application Load Balancer (ALB):** Balanceo de carga hacia el API Gateway.
+   - **Frontend Web:** Alojado como Single Page Application (SPA) estática en Amazon S3.
+   - **API Gateway (Envoy Ingress):** Enrutador perimetral que valida tokens JWT iniciales y aplica cuotas.
+   - **AWS Client VPN con MFA:** Acceso administrativo autenticado mediante certificados y doble factor.
+3. **Z2 — Zona de Aplicación (Red Privada - Amazon EKS):** Clúster de Kubernetes en subredes privadas. La comunicación este-oeste está gobernada por **Istio Service Mesh**, forzando **mTLS estricto** con identidades SPIFFE/SPIRE y certificados X.509 efímeros:
+   - Auth y Usuarios, Catálogo, Pedidos, Inventario, Pagos, Notificaciones.
+   - **Amazon ElastiCache Redis:** Caché privada con autenticación y cifrado TLS.
+   - **Bus de Eventos (Amazon SQS / Kafka):** Cola asíncrona con cifrado SSE-KMS y firma de mensajes.
+4. **Z3 — Zona de Datos (Subredes Aisladas sin Internet):**
+   - **Amazon RDS PostgreSQL Multi-AZ:** Base de datos relacional para transacciones críticas (pedidos, pagos y stock).
+   - **Amazon RDS PostgreSQL (Usuarios):** Aislamiento físico/lógico para datos personales y hashes de credenciales.
+   - **Amazon DynamoDB / S3:** Almacenamiento no relacional y multimedia para catálogo.
+   - **Amazon S3 Object Lock (WORM):** Bitácora inmutable de auditoría para trazabilidad legal y forense.
+5. **Z4 — Servicios de Seguridad y Gobernanza:**
+   - **AWS KMS / CloudHSM (FIPS 140-2 Nivel 3):** Custodia de claves maestras (KEKs), firmas digitales y rotación.
+   - **AWS Secrets Manager:** Gestión e inyección en runtime de secretos operacionales mediante External Secrets Operator.
+   - **AWS IAM con IRSA:** Asignación de roles de mínimo privilegio vinculados a service accounts de Kubernetes.
+   - **Amazon OpenSearch / SIEM:** Ingestión de eventos de seguridad (CloudTrail, VPC Flow Logs, Envoy access logs).
+6. **Z5 — Terceros Confiables (APIs Externas):**
+   - **Pasarela de Pagos (Stripe):** Tokenización del lado del cliente (PCI-DSS SAQ-A). ReMarket nunca almacena ni procesa PAN o CVV.
+   - **APIs de Paquetería (DHL/FedEx):** Enlace HTTPS seguro con credenciales rotadas.
+   - **Proveedor de Notificaciones (Twilio / Amazon SES):** Salida autenticada para envío de correos y SMS.
 
-| # | Componente | ¿En el diagrama? |
-| --- | --- | --- |
-| 1 | Frontend web | ⬜ |
-| 2 | API Gateway / punto de entrada | ⬜ |
-| 3 | Servicio de autenticación y usuarios | ⬜ |
-| 4 | Servicio de catálogo | ⬜ |
-| 5 | Servicio de pedidos | ⬜ |
-| 6 | Servicio de inventario | ⬜ |
-| 7 | Servicio de pagos | ⬜ |
-| 8 | Servicio de notificaciones | ⬜ |
-| 9 | Base de datos transaccional | ⬜ |
-| 10 | BD / almacenamiento de catálogo | ⬜ |
-| 11 | Caché | ⬜ |
-| 12 | Cola o bus de eventos | ⬜ |
-| 13 | Servicio externo de pagos | ⬜ |
-| 14 | Servicio externo de paquetería | ⬜ |
+---
 
-Se pueden añadir más componentes **si se justifican** en el documento técnico.
+## Archivo fuente Mermaid
 
-## Decisión pendiente: ¿qué nube?
-
-El examen permite **AWS, Azure, GCP o una arquitectura cloud genérica**. Hay que elegir una
-y ser consistente en todo el documento.
-
-- [ ] Nube elegida: _______________
-- [ ] Justificación (una línea): _______________
-
-> Sugerencia: *cloud genérica* evita tener que acertar nombres de servicios propietarios, y
-> el examen evalúa el razonamiento, no el catálogo de productos. Si se elige un proveedor
-> concreto, conviene nombrar los servicios reales (p. ej. KMS, Secret Manager, ALB).
-
-## Archivos
-
-| Archivo | Para qué |
-| --- | --- |
-| [`arquitectura.mmd`](arquitectura.mmd) | Borrador en Mermaid — versionable, se edita como texto |
-| `exportados/` | PNG / PDF final que se entrega |
-
-### Cómo trabajar el diagrama
-
-**Opción A — Mermaid (recomendada para el borrador).** Se edita como texto, así que el
-control de versiones y los *diff* funcionan. GitHub lo renderiza solo. Para exportar:
-[mermaid.live](https://mermaid.live) → pegar el contenido de `arquitectura.mmd` → PNG/SVG.
-
-**Opción B — draw.io / Lucidchart / Excalidraw** para la versión final si queremos más
-control visual. Guardar el fuente editable (`.drawio`) **también** en esta carpeta, no solo
-la imagen.
-
-Decidir en equipo y anotarlo aquí: _______________
-
-## Checklist antes de dar por cerrado el diagrama
-
-- [ ] Los 14 componentes mínimos aparecen
-- [ ] Las zonas de confianza están dibujadas como fronteras visibles, no solo mencionadas
-- [ ] Cada flecha dice **con qué se protege** (TLS, mTLS, firma HMAC…)
-- [ ] Se ve qué servicios **no** pueden hablar con la BD de usuarios/pagos
-- [ ] Los componentes de seguridad (KMS, Secret Manager, WAF, IAM, SIEM) están presentes
-- [ ] Exportado a `exportados/` en PDF o PNG legible
-- [ ] Coincide con lo que dice el documento técnico (no describir una cosa y dibujar otra)
+El código fuente vive en [](arquitectura.mmd).

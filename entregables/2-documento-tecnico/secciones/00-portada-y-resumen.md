@@ -1,67 +1,16 @@
-# Portada y resumen ejecutivo
+# Examen 2 — Arquitectura Cloud Segura (ReMarket)
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar · **Extensión objetivo:** ~0.5 página
+**Criptografía y Seguridad 2027-1 · Facultad de Ciencias, UNAM**  
+Profesora: María Ximena | Noviembre 2026 | Equipo de 3 integrantes
 
----
-
-## Portada
-
-**Diseño de una arquitectura cloud segura para un e-commerce**
-Caso: **ReMarket**
-
-Examen 2 — Criptografía y Seguridad 2027-1
-Facultad de Ciencias, UNAM
-
-**Equipo:**
-
-| Nombre completo | Número de cuenta |
-| --- | --- |
-| Oscar David Hernández Rodríguez | |
-| Ian | |
-| Violeta | |
-
-Fecha de entrega: _______________
-
-> Completar nombres completos y números de cuenta antes de entregar.
+| Integrante | Rol Principal | Usuario GitHub |
+| :--- | :--- | :--- |
+| **Oscar David Hernández Rodríguez** | Seguridad en Tránsito y APIs | _oscar-dhr_ |
+| **Ian Alejandro Arroyo Ramírez** | Arquitectura Cloud y Criptografía | **IanFoi** |
+| **Violeta** | DevSecOps y Gestión de Riesgos | _violeta-sec_ |
 
 ---
 
-## Resumen ejecutivo
+## Resumen Ejecutivo
 
-_Media página. Se escribe **al final**, cuando ya existe todo lo demás._
-
-Debe contestar, en prosa corta:
-
-- qué se diseñó
-- sobre qué nube
-- cuáles son las tres o cuatro decisiones de seguridad más importantes y por qué
-- qué riesgos quedan aceptados
-
----
-
-## Índice del documento
-
-| # | Sección | Archivo |
-| --- | --- | --- |
-| 1 | Arquitectura general del sistema | `01-arquitectura-general.md` |
-| 2 | Clasificación de información | `02-clasificacion-de-informacion.md` |
-| 3 | Protección de la página web | `03-proteccion-web-tls.md` |
-| 4 | Comunicación entre microservicios | `04-comunicacion-microservicios.md` |
-| 5 | API REST — `POST /pedido` | `05-api-rest.md` |
-| 6 | Protección de datos almacenados | `06-datos-almacenados.md` |
-| 7 | Contraseñas | `07-contrasenas.md` |
-| 8 | Gestión de claves criptográficas | `08-gestion-de-claves.md` |
-| 9 | Pasarela de pagos | `09-pasarela-de-pagos.md` |
-| 10 | Firmas digitales e integridad | `10-firmas-digitales.md` |
-| 11 | Comunicación asíncrona | `11-comunicacion-asincrona.md` |
-| 12 | Pipeline DevSecOps | `12-pipeline-devsecops.md` |
-| 13 | Seguridad de contenedores y microservicios | `13-seguridad-contenedores.md` |
-| 14 | Evaluación de riesgos | `14-evaluacion-de-riesgos.md` |
-| 15 | Disponibilidad y continuidad | `15-disponibilidad-continuidad.md` |
-| 16 | Uso de IA (atacante y evaluador) | `16-uso-de-ia.md` |
-| 17 | Reflexión final | `17-reflexion-final.md` |
-
-> ⚠️ **El documento técnico no puede pasar de 8–10 páginas.** Son 17 secciones: eso da
-> aproximadamente **media página por sección**. Hay que ser quirúrgico. Las secciones 3 a 11
-> (criptografía) son "la sección principal del proyecto" según el enunciado, así que se
-> llevan la mayor parte del espacio; las demás van condensadas.
+ReMarket es un e-commerce en microservicios sobre AWS diseñado bajo **Zero Trust**. La arquitectura define 6 zonas de confianza, mTLS interno con identidades SPIRE, cifrado en reposo AES-256 con Envelope Encryption (KMS/CloudHSM FIPS 140-2 L3) y contraseñas hasheadas con Argon2id. Los cobros se delegan a Stripe bajo PCI-DSS SAQ-A sin almacenar datos bancarios, las facturas se firman con ECDSA P-256 y los webhooks se validan con HMAC-SHA256 anti-replay. El pipeline DevSecOps integra escaneos SAST/SCA bloqueantes y firmas Cosign. La infraestructura asegura alta disponibilidad Multi-AZ (RTO $\le$ 5 min y RPO = 0 en pagos), complementada con una evaluación crítica del uso de IA en ciberseguridad.

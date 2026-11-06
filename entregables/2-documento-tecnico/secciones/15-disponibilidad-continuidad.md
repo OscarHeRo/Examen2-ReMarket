@@ -1,51 +1,18 @@
-# 15. Disponibilidad y continuidad
+# 15. Disponibilidad y Continuidad del Negocio
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar · **Extensión objetivo:** ~0.75 página
+Para resistir caídas de centros de datos y absorber picos de tráfico en ventas masivas (Hot Sale, Buen Fin), ReMarket implementa redundancia y autoescalado:
 
-## Qué pide el examen
+### Estrategias de Resiliencia
+1. **Redundancia Multi-AZ:** EKS distribuido en 3 Zonas de Disponibilidad. Amazon RDS PostgreSQL opera en Multi-AZ con réplica síncrona y failover automático (<60 s).
+2. **Autoescalado Elástico:** HPA ajusta réplicas de pods por CPU y colas SQS; Karpenter aprovisiona nodos EC2 en segundos.
+3. **Caché en el Borde:** CloudFront absorbe el 80% de lecturas estáticas, protegiendo a los microservicios.
 
-La aplicación debe seguir disponible **incluso durante picos de alta demanda** (campañas,
-promociones, temporada alta). Explicar cómo se incorporan:
+### Objetivos de Recuperación Operativa (RTO y RPO)
 
-- balanceo de carga
-- autoescalado
-- redundancia
-- múltiples zonas de disponibilidad
-- respaldo
-- replicación
-- recuperación ante fallos
+| Servicio | RTO | RPO | Justificación Técnica |
+| :--- | :---: | :---: | :--- |
+| **1. Pagos y Cobros** | **$\le$ 5 min** | **0 s (RPO = 0)** | Tolerancia cero a pérdida de dinero. RPO=0 con réplica síncrona Multi-AZ en RDS; RTO de 5 min absorbe el failover automático de BD. |
+| **2. Auth y Usuarios** | **$\le$ 15 min** | **$\le$ 15 min** | Sesiones activas sostenidas con tokens JWT existentes; altas recientes restauradas vía *Point-in-Time Recovery* (PITR) con logs WAL en S3. |
+| **3. Catálogo** | **$\le$ 30 min** | **$\le$ 1 hora** | Lecturas tolerantes a desfases; navegación soportada en caché (CloudFront/Redis) mientras se restauran snapshots en S3. |
 
-### Tres servicios críticos con RTO y RPO
-
-Elegir **tres** y **justificar los valores** (no basta con poner números):
-
-| Servicio crítico | RTO | RPO | Justificación |
-| --- | --- | --- | --- |
-| | | | |
-| | | | |
-| | | | |
-
-> Recordatorio: **RTO** = cuánto tiempo puede estar caído. **RPO** = cuántos datos podemos
-> permitirnos perder. Un servicio de pagos y uno de catálogo no deberían tener los mismos
-> valores — esa diferencia es justamente lo que se evalúa.
-
-## Las cuatro preguntas del criterio de evaluación
-
-Rellenar **antes** de redactar. Si no se pueden contestar las cuatro, la sección no está lista.
-
-| | |
-| --- | --- |
-| **¿Qué se protege?** | |
-| **¿Contra qué amenaza se protege?** | |
-| **¿Qué propiedad criptográfica o control se necesita?** | |
-| **¿Por qué la solución propuesta es adecuada?** | |
-
-## Desarrollo
-
-_Redactar aquí._
-
-## Decisiones tomadas y alternativas descartadas
-
-| Decisión | Alternativa descartada | Por qué |
-| --- | --- | --- |
-| | | |
+Esta estrategia prioriza consistencia e inversión en pagos y resiliencia ágil en servicios de lectura diferida.

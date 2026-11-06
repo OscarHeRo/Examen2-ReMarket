@@ -1,6 +1,6 @@
 # Entregable 4 — Diseño del pipeline DevSecOps
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar
+> **Responsable:** _por asignar_ · **Estado:** ✅ Listo
 
 ## Qué pide el examen
 

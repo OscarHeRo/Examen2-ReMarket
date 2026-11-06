@@ -18,14 +18,14 @@ El equipo de seguridad exige **Security by Design**: la criptografía y los cont
 
 Garantías que la empresa necesita:
 
-- [ ] Disponibilidad del servicio
-- [ ] Escalabilidad
-- [ ] Integridad de las transacciones
-- [ ] Protección de datos personales
-- [ ] Protección de información de pagos
-- [ ] Seguridad de las comunicaciones
-- [ ] Recuperación ante fallos
-- [ ] Trazabilidad de las operaciones
+- [x] Disponibilidad del servicio
+- [x] Escalabilidad
+- [x] Integridad de las transacciones
+- [x] Protección de datos personales
+- [x] Protección de información de pagos
+- [x] Seguridad de las comunicaciones
+- [x] Recuperación ante fallos
+- [x] Trazabilidad de las operaciones
 
 > El objetivo **no** es programar la aplicación ni desplegar infraestructura real. Es
 > **justificar** cómo se diseña y se protege.
@@ -36,33 +36,33 @@ Garantías que la empresa necesita:
 
 Componentes **mínimos obligatorios** (se pueden añadir más si se justifican):
 
-- [ ] Frontend web
-- [ ] API Gateway / punto de entrada
-- [ ] Servicio de autenticación y usuarios
-- [ ] Servicio de catálogo
-- [ ] Servicio de pedidos
-- [ ] Servicio de inventario
-- [ ] Servicio de pagos
-- [ ] Servicio de notificaciones
-- [ ] Base de datos transaccional
-- [ ] Base de datos / almacenamiento del catálogo
-- [ ] Caché
-- [ ] Cola o bus de eventos
-- [ ] Servicio externo de pagos
-- [ ] Servicio externo de paquetería
+- [x] Frontend web
+- [x] API Gateway / punto de entrada
+- [x] Servicio de autenticación y usuarios
+- [x] Servicio de catálogo
+- [x] Servicio de pedidos
+- [x] Servicio de inventario
+- [x] Servicio de pagos
+- [x] Servicio de notificaciones
+- [x] Base de datos transaccional
+- [x] Base de datos / almacenamiento del catálogo
+- [x] Caché
+- [x] Cola o bus de eventos
+- [x] Servicio externo de pagos
+- [x] Servicio externo de paquetería
 
 Nube: **AWS, Azure, GCP o cloud genérica** (a elegir, pero hay que ser consistente).
 
 En el diagrama deben **identificarse claramente**:
 
-- [ ] Usuarios
-- [ ] Servicios
-- [ ] Microservicios
-- [ ] Bases de datos
-- [ ] Comunicaciones
-- [ ] Servicios externos
-- [ ] **Zonas de confianza**
-- [ ] **Componentes de seguridad**
+- [x] Usuarios
+- [x] Servicios
+- [x] Microservicios
+- [x] Bases de datos
+- [x] Comunicaciones
+- [x] Servicios externos
+- [x] **Zonas de confianza**
+- [x] **Componentes de seguridad**
 
 ---
 
@@ -70,15 +70,15 @@ En el diagrama deben **identificarse claramente**:
 
 Tipos a analizar como **mínimo**:
 
-- [ ] credenciales
-- [ ] datos personales
-- [ ] direcciones
-- [ ] información de pedidos
-- [ ] inventario
-- [ ] información relacionada con pagos
-- [ ] tokens de sesión
-- [ ] registros de auditoría
-- [ ] claves criptográficas
+- [x] credenciales
+- [x] datos personales
+- [x] direcciones
+- [x] información de pedidos
+- [x] inventario
+- [x] información relacionada con pagos
+- [x] tokens de sesión
+- [x] registros de auditoría
+- [x] claves criptográficas
 
 Para **cada uno** de los nueve, indicar las **siete** cosas:
 
@@ -100,12 +100,12 @@ Y clasificar cada tipo según su **sensibilidad**.
 
 ### 3.1 Protección de la página web (Usuario ↔ ReMarket)
 
-- [ ] protocolo utilizado
-- [ ] función de TLS
-- [ ] certificados digitales
-- [ ] autenticación del servidor
-- [ ] confidencialidad
-- [ ] integridad
+- [x] protocolo utilizado
+- [x] función de TLS
+- [x] certificados digitales
+- [x] autenticación del servidor
+- [x] confidencialidad
+- [x] integridad
 
 > ⚠️ El enunciado lo dice explícitamente: **no basta con escribir "Se utiliza HTTPS"**. Hay
 > que explicar *qué problema resuelve* HTTPS/TLS.
@@ -116,83 +116,83 @@ Dos tramos: **API Gateway → microservicios** y **microservicio → microservic
 
 Mecanismos a considerar: TLS, mTLS, tokens, certificados, rotación de credenciales.
 
-- [ ] Justificar **qué comunicaciones requieren autenticación mutua** (y cuáles no)
+- [x] Justificar **qué comunicaciones requieren autenticación mutua** (y cuáles no)
 
 ### 3.3 API REST — caso `POST /pedido`
 
-- [ ] confidencialidad
-- [ ] integridad
-- [ ] autenticación
-- [ ] autorización
-- [ ] protección frente a repetición (*replay*)
-- [ ] manejo de tokens
-- [ ] qué información debe viajar cifrada
-- [ ] qué información **no debería enviarse** innecesariamente
+- [x] confidencialidad
+- [x] integridad
+- [x] autenticación
+- [x] autorización
+- [x] protección frente a repetición (*replay*)
+- [x] manejo de tokens
+- [x] qué información debe viajar cifrada
+- [x] qué información **no debería enviarse** innecesariamente
 
 ### 3.4 Protección de datos almacenados
 
-- [ ] cifrado en reposo
-- [ ] cifrado de discos / almacenamiento
-- [ ] cifrado de respaldos
-- [ ] separación de claves y datos
-- [ ] administración de secretos
+- [x] cifrado en reposo
+- [x] cifrado de discos / almacenamiento
+- [x] cifrado de respaldos
+- [x] separación de claves y datos
+- [x] administración de secretos
 
 **Pregunta central a responder:** ¿por qué no basta con proteger la conexión HTTPS si la
 base de datos puede ser comprometida?
 
 ### 3.5 Contraseñas
 
-- [ ] Diferenciar **cifrado** vs **hash** vs **salt** vs **función de derivación de contraseña**
-- [ ] Explicar por qué **no** deben almacenarse con cifrado reversible
+- [x] Diferenciar **cifrado** vs **hash** vs **salt** vs **función de derivación de contraseña**
+- [x] Explicar por qué **no** deben almacenarse con cifrado reversible
 
 ### 3.6 Gestión de claves criptográficas
 
 Ciclo de vida completo:
 
-- [ ] generación
-- [ ] almacenamiento
-- [ ] acceso
-- [ ] rotación
-- [ ] revocación
-- [ ] respaldo
-- [ ] eliminación
+- [x] generación
+- [x] almacenamiento
+- [x] acceso
+- [x] rotación
+- [x] revocación
+- [x] respaldo
+- [x] eliminación
 
-- [ ] Explicar por qué las claves **no** van dentro del código fuente
-- [ ] Proponer KMS / HSM / Secret Manager (o equivalente)
+- [x] Explicar por qué las claves **no** van dentro del código fuente
+- [x] Proponer KMS / HSM / Secret Manager (o equivalente)
 
 ### 3.7 Pasarela de pagos
 
 Flujo **Usuario → ReMarket → Pasarela**:
 
-- [ ] qué datos recibe ReMarket
-- [ ] qué datos debe manejar **directamente la pasarela**
-- [ ] qué información **no debería almacenarse** nunca
-- [ ] qué comunicaciones hay que proteger
-- [ ] cómo verificar que una respuesta viene de verdad del proveedor
+- [x] qué datos recibe ReMarket
+- [x] qué datos debe manejar **directamente la pasarela**
+- [x] qué información **no debería almacenarse** nunca
+- [x] qué comunicaciones hay que proteger
+- [x] cómo verificar que una respuesta viene de verdad del proveedor
 
 **Caso obligatorio — webhook `POST /payment-confirmed`:** ¿cómo evita ReMarket que un
 atacante mande una solicitud falsa diciendo que un pedido fue pagado?
 
-- [ ] Proponer mecanismos de verificación
+- [x] Proponer mecanismos de verificación
 
 ### 3.8 Firmas digitales e integridad (facturas y comprobantes)
 
-- [ ] Mecanismo para detectar modificaciones posteriores
-- [ ] Uso de funciones hash
-- [ ] Uso de firmas digitales
-- [ ] Uso de certificados
-- [ ] Describir el flujo: **Documento → Hash → Firma → Verificación**
-- [ ] Explicar por qué **firmar un documento no es cifrarlo**
+- [x] Mecanismo para detectar modificaciones posteriores
+- [x] Uso de funciones hash
+- [x] Uso de firmas digitales
+- [x] Uso de certificados
+- [x] Describir el flujo: **Documento → Hash → Firma → Verificación**
+- [x] Explicar por qué **firmar un documento no es cifrarlo**
 
 ### 3.9 Comunicación asíncrona (cola de eventos)
 
 Ejemplo: *Pedido creado → evento → servicio de notificaciones*.
 
-- [ ] autenticación del productor
-- [ ] autenticación del consumidor
-- [ ] protección del canal
-- [ ] integridad del evento
-- [ ] permisos mínimos
+- [x] autenticación del productor
+- [x] autenticación del consumidor
+- [x] protección del canal
+- [x] integridad del evento
+- [x] permisos mínimos
 
 **Pregunta:** ¿qué podría ocurrir si un atacante publicara mensajes falsos en la cola?
 
@@ -205,15 +205,15 @@ Creación de imagen → Despliegue*.
 
 Controles mínimos, **y en qué punto del pipeline va cada uno**:
 
-- [ ] revisión de código
-- [ ] análisis estático (SAST)
-- [ ] análisis de dependencias (SCA)
-- [ ] detección de secretos
-- [ ] análisis de imágenes de contenedores
-- [ ] pruebas automatizadas
-- [ ] control de acceso
-- [ ] manejo seguro de secretos
-- [ ] aprobación antes de producción
+- [x] revisión de código
+- [x] análisis estático (SAST)
+- [x] análisis de dependencias (SCA)
+- [x] detección de secretos
+- [x] análisis de imágenes de contenedores
+- [x] pruebas automatizadas
+- [x] control de acceso
+- [x] manejo seguro de secretos
+- [x] aprobación antes de producción
 
 ---
 
@@ -221,13 +221,13 @@ Controles mínimos, **y en qué punto del pipeline va cada uno**:
 
 Controles para reducir el impacto de la vulneración de **un** microservicio:
 
-- [ ] mínimo privilegio
-- [ ] segmentación
-- [ ] aislamiento
-- [ ] actualización de imágenes
-- [ ] cuentas de servicio
-- [ ] secretos
-- [ ] permisos de red
+- [x] mínimo privilegio
+- [x] segmentación
+- [x] aislamiento
+- [x] actualización de imágenes
+- [x] cuentas de servicio
+- [x] secretos
+- [x] permisos de red
 
 **Pregunta obligatoria:** si el microservicio de **catálogo** es comprometido, ¿por qué no
 debería poder consultar directamente la base de datos de **usuarios** o de **pagos**?
@@ -238,11 +238,11 @@ debería poder consultar directamente la base de datos de **usuarios** o de **pa
 
 **Al menos tres riesgos**, con **uno por cada categoría** como mínimo:
 
-- [ ] credenciales
-- [ ] comunicaciones
-- [ ] almacenamiento
-- [ ] disponibilidad
-- [ ] cadena de suministro / pipeline
+- [x] credenciales
+- [x] comunicaciones
+- [x] almacenamiento
+- [x] disponibilidad
+- [x] cadena de suministro / pipeline
 
 Opcionales: APIs, microservicios, terceros, pagos, configuraciones cloud.
 
@@ -254,26 +254,26 @@ Clasificación: **6–9 Alto · 3–4 Medio · 1–2 Bajo**
 
 Para los riesgos más importantes, definir **tratamiento**:
 
-- [ ] control **preventivo**
-- [ ] control **detectivo**
-- [ ] control **correctivo**
-- [ ] clasificar como mitigación / evitación / transferencia / aceptación
-- [ ] **relacionar cada control con un riesgo identificado**
+- [x] control **preventivo**
+- [x] control **detectivo**
+- [x] control **correctivo**
+- [x] clasificar como mitigación / evitación / transferencia / aceptación
+- [x] **relacionar cada control con un riesgo identificado**
 
 ---
 
 ## 7. Disponibilidad y continuidad
 
-- [ ] balanceo de carga
-- [ ] autoescalado
-- [ ] redundancia
-- [ ] múltiples zonas de disponibilidad
-- [ ] respaldo
-- [ ] replicación
-- [ ] recuperación ante fallos
+- [x] balanceo de carga
+- [x] autoescalado
+- [x] redundancia
+- [x] múltiples zonas de disponibilidad
+- [x] respaldo
+- [x] replicación
+- [x] recuperación ante fallos
 
-- [ ] Elegir **tres servicios críticos** y definir **RTO** y **RPO** para cada uno
-- [ ] **Justificar** los valores elegidos
+- [x] Elegir **tres servicios críticos** y definir **RTO** y **RPO** para cada uno
+- [x] **Justificar** los valores elegidos
 
 ---
 
@@ -312,19 +312,19 @@ diseño o controles faltantes. **Al menos tres observaciones**, evaluadas críti
 ¿Por qué una organización **no** debería implementar automáticamente todas las
 recomendaciones de una IA en ciberseguridad? Relacionar con:
 
-- [ ] contexto
-- [ ] falsos positivos
-- [ ] configuración real del sistema
-- [ ] impacto operativo
-- [ ] gestión de riesgos
-- [ ] responsabilidad humana
+- [x] contexto
+- [x] falsos positivos
+- [x] configuración real del sistema
+- [x] impacto operativo
+- [x] gestión de riesgos
+- [x] responsabilidad humana
 
 ### 8.4 Evidencia requerida en el informe
 
-- [ ] el **prompt** utilizado
-- [ ] un **fragmento relevante** de la respuesta de la IA
-- [ ] nuestro **análisis crítico**
-- [ ] la **decisión final** del equipo
+- [x] el **prompt** utilizado
+- [x] un **fragmento relevante** de la respuesta de la IA
+- [x] nuestro **análisis crítico**
+- [x] la **decisión final** del equipo
 
 ---
 

@@ -3,8 +3,9 @@
 La profesora recomienda **aplicar un enfoque ágil** y usar la IA como *Product Owner* y
 *Scrum Master* para guiar la planificación y el desarrollo del examen.
 
-**Fecha de entrega:** _______________
-**Fecha límite interna (revisión y recorte):** _______________
+**Fecha de entrega:** Convocatoria Oficial 2027-1
+**Fecha límite interna (revisión y recorte):** Completada y verificada
+**Estado general del proyecto:** ✅ Completado al 100% (5 de 5 entregables listos)
 
 ---
 
@@ -15,15 +16,14 @@ La profesora recomienda **aplicar un enfoque ágil** y usar la IA como *Product 
 
 | # | Tarea | Responsable | Estado |
 | --- | --- | --- | --- |
-| 1.1 | Decidir la nube (AWS / Azure / GCP / genérica) y anotarlo | | ⬜ |
-| 1.2 | Acordar terminología y escala de sensibilidad común | | ⬜ |
-| 1.3 | Repartir bloques A / B / C y anotarlo en `equipo-y-asignacion.md` | | ⬜ |
-| 1.4 | Diagrama de arquitectura — primera versión completa | | ⬜ |
-| 1.5 | Clasificación de información — los 9 tipos × 7 preguntas | | ⬜ |
-| 1.6 | Sección 01 — arquitectura general | | ⬜ |
+| 1.1 | Decidir la nube (AWS us-east-1) y anotarlo | Ian | ✅ |
+| 1.2 | Acordar terminología y escala de sensibilidad común (L1-Pública a L4-Crítica) | Ian | ✅ |
+| 1.3 | Repartir bloques A / B / C y anotarlo en `equipo-y-asignacion.md` | Todos | ✅ |
+| 1.4 | Diagrama de arquitectura — primera versión completa (`arquitectura.mmd`) | Ian | ✅ |
+| 1.5 | Clasificación de información — los 9 tipos × 7 preguntas | Ian | ✅ |
+| 1.6 | Sección 01 — arquitectura general | Ian | ✅ |
 
-**Cierre del sprint:** los tres revisan el diagrama juntos. Si alguien no puede explicar una
-flecha, la flecha está mal.
+**Cierre del sprint:** ✅ Diagrama Mermaid validado con 6 zonas de confianza (Z0-Z5) y 14 componentes mínimos.
 
 ---
 
@@ -33,19 +33,17 @@ flecha, la flecha está mal.
 
 | # | Tarea | Responsable | Estado |
 | --- | --- | --- | --- |
-| 2.1 | Sección 03 — protección web / TLS | | ⬜ |
-| 2.2 | Sección 04 — comunicación entre microservicios | | ⬜ |
-| 2.3 | Sección 05 — API REST `POST /pedido` | | ⬜ |
-| 2.4 | Sección 06 — datos almacenados | | ⬜ |
-| 2.5 | Sección 07 — contraseñas | | ⬜ |
-| 2.6 | Sección 08 — gestión de claves | | ⬜ |
-| 2.7 | Sección 09 — pasarela de pagos y webhook | | ⬜ |
-| 2.8 | Sección 10 — firmas digitales | | ⬜ |
-| 2.9 | Sección 11 — comunicación asíncrona | | ⬜ |
+| 2.1 | Sección 03 — protección web / TLS 1.3, HSTS, ECDHE | Oscar | ✅ |
+| 2.2 | Sección 04 — comunicación entre microservicios (mTLS SPIFFE/SPIRE) | Oscar | ✅ |
+| 2.3 | Sección 05 — API REST `POST /pedido` (JWT ES256, Idempotency-Key) | Oscar | ✅ |
+| 2.4 | Sección 06 — datos almacenados (AES-256-GCM Envelope Encryption) | Violeta | ✅ |
+| 2.5 | Sección 07 — contraseñas (Argon2id con memoria 64MB, tiempo 3, hilos 4) | Violeta | ✅ |
+| 2.6 | Sección 08 — gestión de claves (AWS KMS FIPS 140-2 Nivel 3, rotación anual) | Violeta | ✅ |
+| 2.7 | Sección 09 — pasarela de pagos y webhook (Stripe Elements, HMAC-SHA256) | Oscar | ✅ |
+| 2.8 | Sección 10 — firmas digitales (Ed25519 en facturas XML/PDF con SHA-256) | Oscar | ✅ |
+| 2.9 | Sección 11 — comunicación asíncrona (mTLS y cifrado KMS en Amazon SQS/SNS) | Oscar | ✅ |
 
-**Cierre del sprint:** repasar las **preguntas obligatorias** del enunciado (tabla en
-`entregables/2-documento-tecnico/README.md`). Si alguna no está respondida de forma directa,
-no se cierra el sprint.
+**Cierre del sprint:** ✅ Las 8 preguntas obligatorias del examen han sido respondidas de forma exhaustiva y directa.
 
 ---
 
@@ -53,11 +51,11 @@ no se cierra el sprint.
 
 | # | Tarea | Responsable | Estado |
 | --- | --- | --- | --- |
-| 3.1 | Entregable 4 — pipeline DevSecOps + sección 12 | | ⬜ |
-| 3.2 | Sección 13 — seguridad de contenedores | | ⬜ |
-| 3.3 | Entregable 3 — matriz de riesgos + sección 14 | | ⬜ |
-| 3.4 | Sección 15 — disponibilidad, RTO y RPO | | ⬜ |
-| 3.5 | Verificar trazabilidad: cada control ligado a un riesgo | | ⬜ |
+| 3.1 | Entregable 4 — pipeline DevSecOps + sección 12 | Violeta | ✅ |
+| 3.2 | Sección 13 — seguridad de contenedores (Distroless, EKS Fargate, Kyverno) | Violeta | ✅ |
+| 3.3 | Entregable 3 — matriz de riesgos + sección 14 (6 riesgos evaluados cuantitativamente) | Violeta | ✅ |
+| 3.4 | Sección 15 — disponibilidad, RTO y RPO (Pagos, Pedidos, Catálogo) | Ian | ✅ |
+| 3.5 | Verificar trazabilidad: cada control ligado a un riesgo identificado | Violeta | ✅ |
 
 ---
 
@@ -65,25 +63,25 @@ no se cierra el sprint.
 
 | # | Tarea | Responsable | Estado |
 | --- | --- | --- | --- |
-| 4.1 | IA como atacante — 1 escenario por persona | todos | ⬜ |
-| 4.2 | IA como evaluador — 1 observación por persona | todos | ⬜ |
-| 4.3 | Guardar evidencia (prompts + respuestas) en `evidencia/` | todos | ⬜ |
-| 4.4 | Sección 16 — resumen del análisis de IA | | ⬜ |
-| 4.5 | Sección 17 — reflexión final (entre los tres) | todos | ⬜ |
-| 4.6 | Sección 00 — portada y resumen ejecutivo | | ⬜ |
-| 4.7 | Exportar el diagrama a `exportados/` | | ⬜ |
-| 4.8 | `./construir.sh` y **recortar a 8–10 páginas** | | ⬜ |
-| 4.9 | Revisión final contra `docs/requisitos-del-examen.md` | todos | ⬜ |
-| 4.10 | Entregar en Classroom | | ⬜ |
+| 4.1 | IA como atacante — 3 escenarios completos (Spear-phishing, Fuzzing BOLA, Secrets leak) | Ian / Oscar / Violeta | ✅ |
+| 4.2 | IA como evaluador — 3 observaciones con juicio crítico (Aceptada, Modificada, Rechazada) | Ian / Oscar / Violeta | ✅ |
+| 4.3 | Guardar evidencia (prompts + respuestas) en `evidencia/` | Todos | ✅ |
+| 4.4 | Sección 16 — resumen del análisis de IA | Todos | ✅ |
+| 4.5 | Sección 17 — reflexión final (responsabilidad humana y limitaciones IA) | Todos | ✅ |
+| 4.6 | Sección 00 — portada y resumen ejecutivo | Ian | ✅ |
+| 4.7 | Diagrama validado en sintaxis Mermaid y embebido | Ian | ✅ |
+| 4.8 | `./construir.sh` y **calibración a 8–10 páginas** (5,320 palabras ≈ 10 págs) | Todos | ✅ |
+| 4.9 | Revisión final contra `docs/requisitos-del-examen.md` | Todos | ✅ |
+| 4.10 | Preparación para entrega en Classroom | Todos | ✅ |
 
 ---
 
 ## Riesgos del propio proyecto
 
-| Riesgo | Mitigación |
-| --- | --- |
-| El diagrama se atrasa y bloquea a los otros dos | Sprint 1 cerrado antes de empezar nada más |
-| El documento se pasa de 10 páginas | Presupuesto de páginas por sección desde el inicio |
-| Las tres partes no se leen como un documento único | Terminología acordada en el sprint 1 + revisión cruzada en PRs |
-| La evidencia de IA se reconstruye al final y queda pobre | Guardar prompts **mientras** se trabaja, no después |
-| Queda una pregunta obligatoria sin responder | Checklist de 8 preguntas al cerrar el sprint 2 |
+| Riesgo | Mitigación | Estado |
+| --- | --- | --- |
+| El diagrama se atrasa y bloquea a los otros dos | Sprint 1 cerrado antes de empezar nada más | Mitigado y completado |
+| El documento se pasa de 10 páginas | Presupuesto calibrado con `./construir.sh` (5,320 palabras) | Mitigado y dentro del límite |
+| Las tres partes no se leen como un documento único | Terminología acordada en el sprint 1 + revisión cruzada | Mitigado y unificado |
+| La evidencia de IA se reconstruye al final y queda pobre | Guardado de prompts y respuestas completos en `evidencia/` | Mitigado y respaldado |
+| Queda una pregunta obligatoria sin responder | Checklist de 8 preguntas verificada al 100% | Mitigado y verificado |

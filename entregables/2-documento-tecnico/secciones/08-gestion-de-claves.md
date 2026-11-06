@@ -1,45 +1,14 @@
-# 8. Gestión de claves criptográficas
+# 8. Gestión de Claves Criptográficas
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar · **Extensión objetivo:** ~0.75 página
+La arquitectura de ReMarket prohíbe el almacenamiento de claves, contraseñas o certificados dentro del código fuente (*hardcoding*). Incrustar credenciales en el repositorio genera persistencia en el historial de Git, distribuye secretos de producción entre desarrolladores y clonaciones locales, e impide una revocación ágil ante incidentes de seguridad al exigir recompilación y despliegue de emergencia.
 
-## Qué pide el examen
+Para desacoplar la seguridad del código, todas las claves criptográficas y secretos operativos se administran de forma centralizada en **AWS CloudHSM / KMS** (certificado **FIPS 140-2 Nivel 3**) y **AWS Secrets Manager**, inyectándose dinámicamente en la memoria RAM de los microservicios durante su ejecución.
 
-Diseñar una estrategia para administrar las claves del sistema, cubriendo **todo el ciclo
-de vida**:
-
-- generación
-- almacenamiento
-- acceso
-- rotación
-- revocación
-- respaldo
-- eliminación
-
-### Pregunta obligatoria
-
-> **¿Por qué las claves criptográficas no deberían almacenarse directamente dentro del
-> código fuente de los microservicios?**
-
-Se pueden proponer KMS, HSM, Secret Manager o mecanismos equivalentes — explicando qué
-aporta cada uno, no solo nombrándolos.
-
-## Las cuatro preguntas del criterio de evaluación
-
-Rellenar **antes** de redactar. Si no se pueden contestar las cuatro, la sección no está lista.
-
-| | |
-| --- | --- |
-| **¿Qué se protege?** | |
-| **¿Contra qué amenaza se protege?** | |
-| **¿Qué propiedad criptográfica o control se necesita?** | |
-| **¿Por qué la solución propuesta es adecuada?** | |
-
-## Desarrollo
-
-_Redactar aquí._
-
-## Decisiones tomadas y alternativas descartadas
-
-| Decisión | Alternativa descartada | Por qué |
-| --- | --- | --- |
-| | | |
+### Ciclo de Vida de las Claves
+1. **Generación:** Creación de claves maestras dentro de módulos HSM mediante generadores físicos de números aleatorios (TRNG).
+2. **Almacenamiento:** Las claves maestras (KEK) son **no exportables**; el hardware criptográfico impide extraerlas en texto claro bajo cualquier circunstancia.
+3. **Acceso y Autorización:** Restringido por políticas de menor privilegio de AWS IAM vinculadas a roles de servicio de Kubernetes (IRSA). Toda solicitud criptográfica se registra en AWS CloudTrail para auditoría forense.
+4. **Rotación Programada:** Rotación automática anual (365 días) en KMS para claves maestras de cifrado de sobre, y cada 90 días en Secrets Manager para credenciales operativas.
+5. **Revocación:** Capacidad de desactivación instantánea de claves comprometidas (*Key State: Disabled*), invalidando operaciones de descifrado en tiempo real sin reiniciar microservicios.
+6. **Respaldo y Resiliencia:** Réplicas sincronizadas y cifradas entre clústeres HSM distribuidos en múltiples Zonas de Disponibilidad.
+7. **Eliminación Segura:** Periodo forzoso de retención pendiente (7 a 30 días) antes de la destrucción física criptográfica irreversible (*Cryptographic Erasure*).

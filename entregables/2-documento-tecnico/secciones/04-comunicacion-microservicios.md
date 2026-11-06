@@ -1,38 +1,15 @@
-# 4. Comunicación entre microservicios
+# 4. Comunicación entre Microservicios
 
-> **Responsable:** _por asignar_ · **Estado:** ⬜ Sin empezar · **Extensión objetivo:** ~1 página
+Bajo **Zero Trust**, la red interna de Kubernetes no se considera segura. Gestionamos el tráfico este-oeste con **Istio Service Mesh** y proxies **Envoy**, aplicando autenticación mutua (mTLS) según el tramo:
 
-## Qué pide el examen
+| Tramo de Comunicación | Mecanismo | ¿Requiere mTLS? | Justificación Técnica |
+| :--- | :--- | :---: | :--- |
+| **Gateway $\to$ Microservicios** | mTLS estricto + JWT | **SÍ** | El Gateway valida al pod destino y el servicio comprueba que la llamada venga del Gateway perimetral. |
+| **Microservicio $\to$ Microservicio** | mTLS estricto + JWT | **SÍ** | Evita suplantaciones internas y espionaje este-oeste si llegan a hackear un pod. |
+| **Microservicio $\to$ Redis** | TLS 1.3 + Token | **NO (Unilateral)** | Redis no inicia peticiones. El pod valida a Redis por TLS y se conecta con token en canal seguro. |
+| **Microservicio $\to$ RDS PostgreSQL** | TLS 1.3 + AWS IAM | **NO (Unilateral)** | La BD es pasiva. El servicio valida a RDS por TLS y usa credenciales IAM temporales (IRSA). |
 
-Analizar **dos tramos** por separado:
+### Identidad SPIFFE/SPIRE y Rotación
+Cada pod recibe una identidad **SPIFFE** (`spiffe://remarket.internal/ns/prod/sa/pedidos`). El plano de control *istiod* emite certificados X.509 de **24 horas**, rotados en memoria por Envoy sin reiniciar contenedores.
 
-1. **API Gateway → microservicios**
-2. **Microservicio → microservicio**
-
-Proponer una estrategia con los mecanismos: TLS, mTLS, autenticación mediante tokens,
-certificados, rotación de credenciales.
-
-**Obligatorio:** justificar **qué comunicaciones requieren autenticación mutua** y cuáles no.
-No vale poner mTLS en todas partes sin explicar el criterio — hay que decir *por qué* en
-unos tramos sí y en otros no.
-
-## Las cuatro preguntas del criterio de evaluación
-
-Rellenar **antes** de redactar. Si no se pueden contestar las cuatro, la sección no está lista.
-
-| | |
-| --- | --- |
-| **¿Qué se protege?** | |
-| **¿Contra qué amenaza se protege?** | |
-| **¿Qué propiedad criptográfica o control se necesita?** | |
-| **¿Por qué la solución propuesta es adecuada?** | |
-
-## Desarrollo
-
-_Redactar aquí._
-
-## Decisiones tomadas y alternativas descartadas
-
-| Decisión | Alternativa descartada | Por qué |
-| --- | --- | --- |
-| | | |
+En Capa 4, Envoy asegura el enlace mTLS autenticando al microservicio emisor; en Capa 7, el microservicio valida el token JWT para autorizar los permisos del usuario final.

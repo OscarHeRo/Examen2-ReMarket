@@ -28,4 +28,92 @@ Formato: una entrada por sesión, lo más corta posible.
 
 ---
 
+### 2026-11-05 — Sesión 4: Consolidación, Auditoría de IA y Cierre de Entregables
+
+**Asistentes:** Ian Alejandro Arroyo Ramírez, Oscar David Hernández Rodríguez, Violeta
+**Duración:** 4 horas
+
+**Qué se decidió:**
+- Concluir el Entregable 5 documentando 3 vectores de ataque de IA y 3 evaluaciones críticas (aceptando mTLS en event bus, descartando cifrado homomórfico para Stripe, y rechazando claves simétricas en cliente).
+- Correr `./construir.sh` y calibrar la extensión del documento técnico a 5,320 palabras (≈ 10 páginas), respetando el límite estricto de la rúbrica.
+- Validar trazabilidad total entre la matriz de riesgos (R1-R6), los controles del pipeline DevSecOps y las secciones de arquitectura.
+
+**Qué se avanzó:**
+- Completados al 100% los 5 entregables del examen.
+- Secciones 00 a 17 revisadas, estructuradas y compiladas en `documento-tecnico.md`.
+- Evidencias de IA generadas en `entregables/5-analisis-ia/evidencia/`.
+
+**Bloqueos:**
+- Ninguno pendiente. El script `./construir.sh` corre exitosamente sin advertencias de longitud.
+
+**Siguiente paso y quién lo toma:**
+- Preparar la revisión y entrega final del repositorio del equipo en Classroom (Todos).
+
+---
+
+### 2026-11-04 — Sesión 3: DevSecOps, Seguridad en Reposo y Análisis de Riesgos
+
+**Asistentes:** Ian Alejandro Arroyo Ramírez, Oscar David Hernández Rodríguez, Violeta
+**Duración:** 3.5 horas
+
+**Qué se decidió:**
+- Diseñar el pipeline CI/CD en 8 etapas con autenticación OIDC hacia AWS (sin credenciales estáticas).
+- Aplicar envelope encryption con AES-256-GCM y AWS KMS HSM FIPS 140-2 Nivel 3.
+- Definir 6 riesgos cuantitativos ($I 	imes P$) cubriendo credenciales, tránsito, almacenamiento, disponibilidad, supply chain y pasarela de pagos.
+
+**Qué se avanzó:**
+- Entregable 3 (`matriz-riesgos.md`) y Entregable 4 (`pipeline-devsecops.md`) redactados y validados.
+- Secciones 06, 07, 08, 12, 13, 14 y 15 completadas.
+
+**Bloqueos:**
+- Inicialmente el conteo de palabras excedía las 10 páginas; se planificó condensar en la sesión de cierre.
+
+**Siguiente paso y quién lo toma:**
+- Desarrollar el Entregable 5 de IA y ajustar conteo de palabras (Todos).
+
+---
+
+### 2026-11-03 — Sesión 2: Criptografía en Tránsito y Pasarela de Pagos
+
+**Asistentes:** Ian Alejandro Arroyo Ramírez, Oscar David Hernández Rodríguez, Violeta
+**Duración:** 3 horas
+
+**Qué se decidió:**
+- Establecer TLS 1.3 con ECDHE (X25519) en el perímetro y mTLS con SPIFFE/SPIRE en la malla interna de microservicios.
+- Definir arquitectura SAQ-A para pagos mediante Stripe Elements (ReMarket nunca toca ni almacena PAN/CVV).
+- Asegurar el webhook `POST /payment-confirmed` mediante HMAC-SHA256, ventana de 300s y verificación out-of-band a la API de Stripe.
+
+**Qué se avanzó:**
+- Secciones 03, 04, 05, 09, 10 y 11 completadas con las cuatro preguntas clave contestadas.
+
+**Bloqueos:**
+- Ninguno.
+
+**Siguiente paso y quién lo toma:**
+- Desarrollar Bloque C (Datos en reposo, DevSecOps y riesgos) (Violeta / Todos).
+
+---
+
+### 2026-11-02 — Sesión 1: Kickoff, Definición de Arquitectura y Sprint 1
+
+**Asistentes:** Ian Alejandro Arroyo Ramírez, Oscar David Hernández Rodríguez, Violeta
+**Duración:** 2.5 horas
+
+**Qué se decidió:**
+- Selección de proveedor cloud: AWS (us-east-1).
+- Zonas de confianza: Z0 (Internet), Z1 (Edge/WAF), Z2 (DMZ Ingress), Z3 (App Mesh privada), Z4 (Data/Storage), Z5 (Gestión de seguridad/KMS).
+- Distribución de bloques de trabajo según `equipo-y-asignacion.md`.
+
+**Qué se avanzó:**
+- Entregable 1 (`arquitectura.mmd`) completado con 14 componentes y servicios de seguridad.
+- Sección 01 y Sección 02 (clasificación de 9 tipos de datos × 7 preguntas) terminadas.
+
+**Bloqueos:**
+- Ninguno.
+
+**Siguiente paso y quién lo toma:**
+- Iniciar el Sprint 2 de Criptografía en tránsito y reposo (Oscar y Violeta).
+
+---
+
 <!-- Las entradas nuevas van arriba de esta línea, la más reciente primero. -->

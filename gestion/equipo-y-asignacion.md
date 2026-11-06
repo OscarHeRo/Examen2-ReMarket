@@ -5,7 +5,7 @@
 | Nombre | Nombre completo | Nº de cuenta | Usuario GitHub |
 | --- | --- | --- | --- |
 | Oscar | Oscar David Hernández Rodríguez | | |
-| Ian | | | |
+| Ian | Ian Alejandro Arroyo Ramírez | |IanFoi |
 | Violeta | | | |
 
 > Completar al aceptar la invitación al repositorio.
@@ -18,7 +18,7 @@
 parecido y para que nadie dependa de que otro termine primero. Ajústenla en la primera
 reunión y marquen aquí quién toma cada bloque.
 
-### Bloque A — Arquitectura y datos · _asignado a: ______________
+### Bloque A — Arquitectura y datos · _asignado a: Ian Alejandro Arroyo Ramírez (`IanFoi`)_
 
 | Qué | Dónde |
 | --- | --- |
@@ -30,7 +30,7 @@ reunión y marquen aquí quién toma cada bloque.
 > Este bloque **va primero**: los otros dos dependen de que exista el diagrama y la
 > clasificación de información para poder justificar sus mecanismos.
 
-### Bloque B — Criptografía en tránsito · _asignado a: ______________
+### Bloque B — Criptografía en tránsito · _asignado a: Oscar David Hernández Rodríguez_
 
 | Qué | Dónde |
 | --- | --- |
@@ -41,7 +41,7 @@ reunión y marquen aquí quién toma cada bloque.
 | Sección 10 — Firmas digitales e integridad | `…/secciones/10-firmas-digitales.md` |
 | Sección 11 — Comunicación asíncrona | `…/secciones/11-comunicacion-asincrona.md` |
 
-### Bloque C — Datos en reposo, riesgos y pipeline · _asignado a: ______________
+### Bloque C — Datos en reposo, riesgos y pipeline · _asignado a: Violeta_
 
 | Qué | Dónde |
 | --- | --- |
