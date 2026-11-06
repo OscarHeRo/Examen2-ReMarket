@@ -4,9 +4,9 @@
 
 | Nombre | Nombre completo | Nº de cuenta | Usuario GitHub |
 | --- | --- | --- | --- |
-| Oscar | Oscar David Hernández Rodríguez | | |
+| Oscar | Oscar David Hernández Rodríguez | | OscarHeRo |
 | Ian | Ian Alejandro Arroyo Ramírez | |IanFoi |
-| Violeta | | | |
+| Violeta | Violeta Ardeni Castillo Camacho | | chateau25 |
 
 > Completar al aceptar la invitación al repositorio.
 
@@ -41,7 +41,7 @@ reunión y marquen aquí quién toma cada bloque.
 | Sección 10 — Firmas digitales e integridad | `…/secciones/10-firmas-digitales.md` |
 | Sección 11 — Comunicación asíncrona | `…/secciones/11-comunicacion-asincrona.md` |
 
-### Bloque C — Datos en reposo, riesgos y pipeline · _asignado a: Violeta_
+### Bloque C — Datos en reposo, riesgos y pipeline · _asignado a: Violeta Ardeni Castillo Camacho (`chateau25`)_
 
 | Qué | Dónde |
 | --- | --- |

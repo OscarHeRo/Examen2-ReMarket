@@ -138,7 +138,7 @@ Formato: una entrada por sesión, lo más corta posible.
 - `construir.sh` corregido (encabezado de Chrome, título duplicado, fórmulas, anchos de tabla) y diagrama reexportado en alta resolución.
 
 **Bloqueos:**
-- Falta el apellido y usuario de GitHub de Violeta.
+- Ninguno: los datos de Violeta (Violeta Ardeni Castillo Camacho, `chateau25`) ya están en la portada.
 
 **Siguiente paso y quién lo toma:**
 - Ian y Violeta revisan las correcciones antes de fusionar a `main` (Todos).

@@ -7,7 +7,7 @@ Profesora: María Ximena | Noviembre 2026 | Equipo de 3 integrantes
 | :--- | :--- | :--- |
 | **Oscar David Hernández Rodríguez** | Criptografía en tránsito (Bloque B) | **OscarHeRo** |
 | **Ian Alejandro Arroyo Ramírez** | Arquitectura y datos (Bloque A) | **IanFoi** |
-| **Violeta** | Datos en reposo, riesgos y pipeline (Bloque C) | _pendiente_ |
+| **Violeta Ardeni Castillo Camacho** | Datos en reposo, riesgos y pipeline (Bloque C) | **chateau25** |
 
 ## Resumen Ejecutivo
 

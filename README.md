@@ -19,7 +19,7 @@ material del curso que sirve de apoyo, los cinco entregables y la gestión del e
 | --- | --- | --- |
 | Oscar David Hernández Rodríguez | Criptografía en tránsito (Bloque B) | OscarHeRo |
 | Ian Alejandro Arroyo Ramírez | Arquitectura y datos (Bloque A) | IanFoi |
-| Violeta | Datos en reposo, riesgos y pipeline (Bloque C) | _pendiente_ |
+| Violeta Ardeni Castillo Camacho | Datos en reposo, riesgos y pipeline (Bloque C) | chateau25 |
 
 El examen permite equipos de **máximo 3 personas**. La repartición propuesta está en
 [`gestion/equipo-y-asignacion.md`](gestion/equipo-y-asignacion.md).
